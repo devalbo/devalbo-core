@@ -1,7 +1,6 @@
 import React from 'react';
 import { render } from 'ink';
 import { Command } from 'commander';
-import * as clack from '@clack/prompts';
 import { commands } from './commands';
 
 /**
@@ -20,36 +19,11 @@ export async function setupCLI(argv?: string[]) {
   program
     .command('greet')
     .description('Greet someone')
-    .argument('[name]', 'Name to greet', 'World')
+    .argument('[name...]', 'Name to greet', [])
     .option('-i, --interactive', 'Use interactive prompts')
-    .action(async (name: string, options: { interactive?: boolean }) => {
-      let finalName = name;
-
-      if (options.interactive) {
-        clack.intro('Demo Greeter');
-
-        const nameInput = await clack.text({
-          message: 'Who would you like to greet?',
-          placeholder: 'World',
-          initialValue: name !== 'World' ? name : '',
-          validate: (value) => {
-            if (!value || value.trim().length === 0) {
-              return 'Name cannot be empty';
-            }
-          }
-        });
-
-        if (clack.isCancel(nameInput)) {
-          clack.cancel('Operation cancelled');
-          process.exit(0);
-        }
-
-        finalName = nameInput as string;
-        clack.outro('Done!');
-      }
-
-      // Use shared command handler
-      const result = commands.greet([finalName]);
+    .action(async (nameArgs: string[], options: { interactive?: boolean }) => {
+      // Use shared command handler with Ink-based prompts
+      const result = commands.greet(nameArgs, { interactive: options.interactive });
       render(result.component);
     });
 

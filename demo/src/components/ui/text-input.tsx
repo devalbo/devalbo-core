@@ -31,11 +31,9 @@ export function useTextInput(options: UseTextInputOptions = {}): UseTextInputRet
 
   useInput((inputChar, key) => {
     if (key.return) {
-      if (value.trim()) {
-        setHistory((prev) => [...prev, value])
-        options.onSubmit?.(value)
-        setValueInternal('')
-      }
+      setHistory((prev) => [...prev, value])
+      options.onSubmit?.(value)
+      setValueInternal('')
     } else if (key.backspace || key.delete) {
       setValueInternal((prev) => prev.slice(0, -1))
     } else if (!key.ctrl && !key.meta && inputChar) {
@@ -81,11 +79,9 @@ export const TextInput = ({
     if (!focus) return
 
     if (key.return) {
-      if (value.trim()) {
-        onSubmit?.(value)
-        if (controlledValue === undefined) {
-          setInternalValue('')
-        }
+      onSubmit?.(value)
+      if (controlledValue === undefined) {
+        setInternalValue('')
       }
     } else if (key.backspace || key.delete) {
       setValue(value.slice(0, -1))

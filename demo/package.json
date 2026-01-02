@@ -44,10 +44,10 @@
     "vitest": "^4.0.16"
   },
   "dependencies": {
-    "@clack/prompts": "^0.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "commander": "^14.0.2",
+    "ink-select-input": "^6.2.0",
     "ink-web": "^0.1.11",
     "lucide-react": "^0.562.0",
     "react": "^19.2.3",

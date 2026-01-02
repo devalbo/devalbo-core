@@ -29,6 +29,15 @@ describe('commands', () => {
       expect(result.component).toBeDefined();
       expect(result.error).toBeUndefined();
     });
+
+    it('should support interactive mode', () => {
+      // Arrange & Act
+      const result = commands.greet(['Alice'], { interactive: true });
+
+      // Assert
+      expect(result.component).toBeDefined();
+      expect(result.error).toBeUndefined();
+    });
   });
 
   describe('info', () => {
