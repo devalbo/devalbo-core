@@ -1,17 +1,46 @@
-import { When, Then, Before, After, setDefaultTimeout } from '@cucumber/cucumber';
-import { chromium } from '@playwright/test';
+import { When, Then, Before, After, BeforeAll, AfterAll, setDefaultTimeout } from '@cucumber/cucumber';
+import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
 import { strict as assert } from 'assert';
 
 // World context for browser tests
-let world = {};
+interface World {
+  output: string;
+  page?: Page;
+}
+
+let world: World = { output: '' };
+let sharedBrowser: Browser | null = null;
+let sharedContext: BrowserContext | null = null;
+let oldPage: Page | null = null;
 
 // Increase timeout for browser operations
 setDefaultTimeout(30000);
 
+BeforeAll(async function () {
+  // Launch browser and create a single context (window)
+  sharedBrowser = await chromium.launch({ headless: false });
+  sharedContext = await sharedBrowser.newContext();
+});
+
+AfterAll(async function () {
+  // Close context and browser after all tests
+  if (sharedContext) await sharedContext.close();
+  if (sharedBrowser) await sharedBrowser.close();
+});
+
 Before(async function () {
   world = { output: '' };
-  world.browser = await chromium.launch({ headless: false });
-  world.page = await world.browser.newPage();
+
+  // Create new page/tab in the same context (window)
+  const newPage = await sharedContext.newPage();
+
+  // Close old page after new one is created but before navigating
+  if (oldPage) {
+    await oldPage.close();
+  }
+
+  world.page = newPage;
+  oldPage = newPage;
 
   // Navigate to the app
   await world.page.goto('http://localhost:3000');
@@ -21,11 +50,11 @@ Before(async function () {
 });
 
 After(async function () {
-  if (world.page) await world.page.close();
-  if (world.browser) await world.browser.close();
+  // Don't close the page here - will be closed before next test
+  // or at the end in AfterAll
 });
 
-async function typeCommand(command) {
+async function typeCommand(command: string) {
   if (!world.page) throw new Error('Page not initialized');
 
   // Get initial output to compare against
@@ -67,7 +96,7 @@ When('I run the greet command without arguments', async function () {
   await typeCommand('greet');
 });
 
-When('I run the greet command with {string}', async function (name) {
+When('I run the greet command with {string}', async function (name: string) {
   await typeCommand(`greet ${name}`);
 });
 
@@ -75,7 +104,7 @@ When('I run the help command', async function () {
   await typeCommand('help');
 });
 
-Then('I should see {string}', function (expectedText) {
+Then('I should see {string}', function (expectedText: string) {
   assert.ok(
     world.output.includes(expectedText),
     `Expected output to contain "${expectedText}", but got:\n${world.output}`

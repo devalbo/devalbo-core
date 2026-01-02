@@ -187,6 +187,10 @@ mkdir -p src/commands
 mkdir -p src/components/ui
 mkdir -p src/web
 mkdir -p public
+mkdir -p tests
+mkdir -p features
+mkdir -p test-steps/terminal
+mkdir -p test-steps/browser
 ```
 
 ### Set up Testing
@@ -206,6 +210,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    include: ['tests/**/*.{test,spec}.{ts,tsx}'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
@@ -228,14 +233,364 @@ export default defineConfig({
 });
 ```
 
+**Note:** Unit tests are organized in the `tests/` directory with a structure that mirrors `src/`. For example, tests for `src/commands/index.tsx` go in `tests/commands/index.test.tsx`.
+
 
 #### Install Behavior Testing Framework
 
-TODO: setup installing cucumber and playwright. we should be able to write CLI tests that use the same gherkin scenarios, but different step files underneath for browser vs. terminal. 
+Install Cucumber for BDD testing and Playwright for browser automation:
+
+```bash
+# Install Cucumber and Playwright
+npm install --save-dev @cucumber/cucumber
+npm install --save-dev @playwright/test playwright
+
+# Install tsx for running TypeScript test steps
+npm install --save-dev tsx
+
+# Install Playwright browsers
+npx playwright install chromium
+```
+
+Add a postinstall script to `package.json` to ensure browsers are installed:
+
+```json
+{
+  "scripts": {
+    "postinstall": "playwright install chromium"
+  }
+}
+```
+
+Create directory structure for BDD tests:
+
+```bash
+mkdir -p features
+mkdir -p test-steps/terminal
+mkdir -p test-steps/browser
+mkdir -p test-results/bdd/terminal
+mkdir -p test-results/bdd/browser
+```
+
+Create a feature file `features/greet.feature`:
+
+```gherkin
+Feature: Greet Command
+  As a user
+  I want to greet someone
+  So that I can be friendly
+
+  Scenario: Greet without arguments
+    When I run the greet command without arguments
+    Then I should see "Hello, World!"
+
+  Scenario: Greet with a name
+    When I run the greet command with "Alice"
+    Then I should see "Hello, Alice!"
+
+  Scenario: View help
+    When I run the help command
+    Then I should see "Available Commands"
+```
+
+Create terminal step definitions `test-steps/terminal/greet.steps.ts`:
+
+```typescript
+import { When, Then, Before, After } from '@cucumber/cucumber';
+import { execSync } from 'child_process';
+import { strict as assert } from 'assert';
+
+interface World {
+  output: string;
+  error?: string;
+}
+
+let world: World = { output: '' };
+
+Before(function () {
+  world = { output: '' };
+});
+
+After(function () {
+  world = { output: '' };
+});
+
+When('I run the greet command without arguments', function () {
+  try {
+    world.output = execSync('node dist/cli.js greet', {
+      encoding: 'utf-8',
+      cwd: process.cwd()
+    });
+  } catch (error: any) {
+    world.error = error.message;
+    world.output = error.stdout || '';
+  }
+});
+
+When('I run the greet command with {string}', function (name: string) {
+  try {
+    world.output = execSync(`node dist/cli.js greet ${name}`, {
+      encoding: 'utf-8',
+      cwd: process.cwd()
+    });
+  } catch (error: any) {
+    world.error = error.message;
+    world.output = error.stdout || '';
+  }
+});
+
+When('I run the help command', function () {
+  try {
+    world.output = execSync('node dist/cli.js help', {
+      encoding: 'utf-8',
+      cwd: process.cwd()
+    });
+  } catch (error: any) {
+    world.error = error.message;
+    world.output = error.stdout || '';
+  }
+});
+
+Then('I should see {string}', function (expectedText: string) {
+  assert.ok(
+    world.output.includes(expectedText),
+    `Expected output to contain "${expectedText}", but got:\n${world.output}`
+  );
+});
+```
+
+Create browser step definitions `test-steps/browser/greet.steps.ts`:
+
+```typescript
+import { When, Then, Before, After, BeforeAll, AfterAll, setDefaultTimeout } from '@cucumber/cucumber';
+import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
+import { strict as assert } from 'assert';
+
+interface World {
+  output: string;
+  page?: Page;
+}
+
+let world: World = { output: '' };
+let sharedBrowser: Browser | null = null;
+let sharedContext: BrowserContext | null = null;
+let oldPage: Page | null = null;
+
+setDefaultTimeout(30000);
+
+BeforeAll(async function () {
+  sharedBrowser = await chromium.launch({ headless: false });
+  sharedContext = await sharedBrowser.newContext();
+});
+
+AfterAll(async function () {
+  if (sharedContext) await sharedContext.close();
+  if (sharedBrowser) await sharedBrowser.close();
+});
+
+Before(async function () {
+  world = { output: '' };
+  const newPage = await sharedContext.newPage();
+
+  if (oldPage) {
+    await oldPage.close();
+  }
+
+  world.page = newPage;
+  oldPage = newPage;
+
+  await world.page.goto('http://localhost:3000');
+  await world.page.waitForSelector('.xterm', { timeout: 10000 });
+});
+
+After(async function () {
+  // Don't close the page here - will be closed before next test
+});
+
+async function typeCommand(command: string) {
+  if (!world.page) throw new Error('Page not initialized');
+
+  const initialOutput = await world.page.evaluate(() => {
+    const terminal = document.querySelector('#cli-terminal .xterm-screen');
+    return terminal ? (terminal.innerText || terminal.textContent || '') : '';
+  });
+
+  await world.page.click('#cli-terminal');
+  await world.page.waitForTimeout(300);
+
+  await world.page.keyboard.type(command, { delay: 50 });
+  await world.page.keyboard.press('Enter');
+
+  // Wait for output to change
+  let attempts = 0;
+  let outputChanged = false;
+  while (attempts < 20 && !outputChanged) {
+    await world.page.waitForTimeout(200);
+    const currentOutput = await world.page.evaluate(() => {
+      const terminal = document.querySelector('#cli-terminal .xterm-screen');
+      return terminal ? (terminal.innerText || terminal.textContent || '') : '';
+    });
+    outputChanged = currentOutput !== initialOutput && currentOutput.includes(command);
+    attempts++;
+  }
+
+  world.output = await world.page.evaluate(() => {
+    const terminal = document.querySelector('#cli-terminal .xterm-screen');
+    if (!terminal) return '';
+    return terminal.innerText || terminal.textContent || '';
+  });
+}
+
+When('I run the greet command without arguments', async function () {
+  await typeCommand('greet');
+});
+
+When('I run the greet command with {string}', async function (name: string) {
+  await typeCommand(`greet ${name}`);
+});
+
+When('I run the help command', async function () {
+  await typeCommand('help');
+});
+
+Then('I should see {string}', function (expectedText: string) {
+  assert.ok(
+    world.output.includes(expectedText),
+    `Expected output to contain "${expectedText}", but got:\n${world.output}`
+  );
+});
+```
+
+**Note**: All test step files are written in TypeScript. Cucumber will execute them using `tsx` when imported with the `--import` flag.
 
 #### Configure test runners and outputs
 
-When running a test command, in non-interactive mode, output each results to a well-known location per test type (e.g. unit-test, bdd). The latest version of the test should be placed in a file or directory called `latest` and placed at the root of the well-known location.
+Update vitest.config.ts to support timestamped output directories:
+
+```typescript
+import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    reporters: ['default', 'json', 'junit'],
+    outputFile: {
+      json: `./${process.env.TEST_OUTPUT_DIR || 'test-results/unit/latest'}/results.json`,
+      junit: `./${process.env.TEST_OUTPUT_DIR || 'test-results/unit/latest'}/junit.xml`
+    },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html'],
+      reportsDirectory: `./${process.env.TEST_OUTPUT_DIR || 'test-results/unit/latest'}/coverage`,
+      exclude: [
+        'node_modules/',
+        'dist/',
+        '**/*.d.ts',
+        '**/*.test.ts',
+        '**/*.spec.ts',
+        'vite.config.ts',
+        'vitest.config.ts'
+      ]
+    }
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src')
+    }
+  }
+});
+```
+
+Create a script to copy timestamped results to `latest` folder. Create `scripts/copy-test-results.ts`:
+
+```typescript
+import { cpSync } from 'fs';
+import { join } from 'path';
+
+const [testType, timestamp] = process.argv.slice(2);
+
+if (!testType || !timestamp) {
+  console.error('Usage: tsx scripts/copy-test-results.ts <testType> <timestamp>');
+  process.exit(1);
+}
+
+const projectRoot = process.cwd();
+const sourceDir = join(projectRoot, 'test-results', testType, timestamp);
+const latestDir = join(projectRoot, 'test-results', testType, 'latest');
+
+console.log(`Copying ${sourceDir} to ${latestDir}...`);
+cpSync(sourceDir, latestDir, { recursive: true, force: true });
+console.log('Done!');
+```
+
+Create a script to generate HTML reports from Vitest JSON output. Create `scripts/generate-html-report.ts`:
+
+```typescript
+import { readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
+
+const timestamp = process.argv[2] || 'latest';
+const projectRoot = process.cwd();
+const testDir = join(projectRoot, 'test-results/unit', timestamp);
+const jsonPath = join(testDir, 'results.json');
+
+const data = JSON.parse(readFileSync(jsonPath, 'utf-8'));
+
+const totalTests = data.numTotalTests || 0;
+const passedTests = data.numPassedTests || 0;
+const failedTests = data.numFailedTests || 0;
+
+const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Results - ${timestamp}</title>
+  <style>
+    body { font-family: system-ui; margin: 20px; }
+    .summary { background: #f5f5f5; padding: 20px; border-radius: 8px; }
+    .pass { color: green; }
+    .fail { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Test Results - ${timestamp}</h1>
+  <div class="summary">
+    <p>Total: ${totalTests}</p>
+    <p class="pass">Passed: ${passedTests}</p>
+    <p class="fail">Failed: ${failedTests}</p>
+  </div>
+</body>
+</html>`;
+
+const outputPath = join(testDir, 'report.html');
+writeFileSync(outputPath, html);
+console.log(`HTML report generated: ${outputPath}`);
+```
+
+Update package.json scripts to generate timestamped test results:
+
+```json
+{
+  "scripts": {
+    "test": "vitest",
+    "test:unit": "TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S) && TEST_OUTPUT_DIR=test-results/unit/$TIMESTAMP vitest run && tsx scripts/generate-html-report.ts $TIMESTAMP && tsx scripts/copy-test-results.ts unit $TIMESTAMP",
+    "test:bdd": "npm run test:bdd:terminal && npm run test:bdd:browser",
+    "test:bdd:terminal": "TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S) && npm run build:cli && cucumber-js features --import test-steps/terminal/greet.steps.ts --format progress --format json:test-results/bdd/terminal/$TIMESTAMP/cucumber-report.json --format html:test-results/bdd/terminal/$TIMESTAMP/cucumber-report.html && tsx scripts/copy-test-results.ts bdd/terminal $TIMESTAMP",
+    "test:bdd:browser": "TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S) && cucumber-js features --import test-steps/browser/greet.steps.ts --format progress --format json:test-results/bdd/browser/$TIMESTAMP/cucumber-report.json --format html:test-results/bdd/browser/$TIMESTAMP/cucumber-report.html && tsx scripts/copy-test-results.ts bdd/browser $TIMESTAMP",
+    "test:all": "npm run test && npm run test:bdd"
+  }
+}
+```
+
+**Test results structure:**
+- `test-results/unit/{timestamp}/` - Timestamped unit test results
+- `test-results/unit/latest/` - Latest unit test results (copy of most recent)
+- `test-results/bdd/terminal/{timestamp}/` - Timestamped terminal BDD results
+- `test-results/bdd/terminal/latest/` - Latest terminal BDD results
+- `test-results/bdd/browser/{timestamp}/` - Timestamped browser BDD results
+- `test-results/bdd/browser/latest/` - Latest browser BDD results
+
 
 ### Install UI Libraries
 
@@ -666,22 +1021,28 @@ Create `index.html`:
 
 ## Step 12: Create Tests
 
-Create `src/commands/index.test.tsx`:
+Create `tests/commands/index.test.tsx` (mirroring the `src/commands/index.tsx` structure):
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { commands } from './index';
+import { commands } from '../../src/commands/index';
 
 describe('commands', () => {
   describe('greet', () => {
     it('should greet with default name', () => {
+      // Arrange & Act
       const result = commands.greet([]);
+
+      // Assert
       expect(result.component).toBeDefined();
       expect(result.error).toBeUndefined();
     });
 
     it('should greet with specific name', () => {
+      // Arrange & Act
       const result = commands.greet(['Alice']);
+
+      // Assert
       expect(result.component).toBeDefined();
       expect(result.error).toBeUndefined();
     });
@@ -689,7 +1050,10 @@ describe('commands', () => {
 
   describe('help', () => {
     it('should return help component', () => {
+      // Arrange & Act
       const result = commands.help();
+
+      // Assert
       expect(result.component).toBeDefined();
       expect(result.error).toBeUndefined();
     });
@@ -697,12 +1061,19 @@ describe('commands', () => {
 });
 ```
 
+**Test Organization:**
+- Unit tests live in `tests/` directory
+- Test file structure mirrors `src/` directory structure
+- Import paths use relative paths like `'../../src/commands/index'`
+- Follow Arrange/Act/Assert pattern for clarity
+
 ## Step 13: Create .gitignore
 
 ```
 node_modules/
 dist/
 coverage/
+test-results/
 *.log
 .DS_Store
 .env

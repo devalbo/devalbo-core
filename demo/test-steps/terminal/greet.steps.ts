@@ -3,7 +3,12 @@ import { execSync } from 'child_process';
 import { strict as assert } from 'assert';
 
 // World context for terminal tests
-let world = {};
+interface World {
+  output: string;
+  error?: string;
+}
+
+let world: World = { output: '' };
 
 Before(function () {
   world = { output: '' };
@@ -19,19 +24,19 @@ When('I run the greet command without arguments', function () {
       encoding: 'utf-8',
       cwd: process.cwd()
     });
-  } catch (error) {
+  } catch (error: any) {
     world.error = error.message;
     world.output = error.stdout || '';
   }
 });
 
-When('I run the greet command with {string}', function (name) {
+When('I run the greet command with {string}', function (name: string) {
   try {
     world.output = execSync(`node dist/cli.js greet ${name}`, {
       encoding: 'utf-8',
       cwd: process.cwd()
     });
-  } catch (error) {
+  } catch (error: any) {
     world.error = error.message;
     world.output = error.stdout || '';
   }
@@ -43,13 +48,13 @@ When('I run the help command', function () {
       encoding: 'utf-8',
       cwd: process.cwd()
     });
-  } catch (error) {
+  } catch (error: any) {
     world.error = error.message;
     world.output = error.stdout || '';
   }
 });
 
-Then('I should see {string}', function (expectedText) {
+Then('I should see {string}', function (expectedText: string) {
   assert.ok(
     world.output.includes(expectedText),
     `Expected output to contain "${expectedText}", but got:\n${world.output}`

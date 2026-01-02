@@ -76,12 +76,17 @@ npm run build:cli
 
 ## Testing
 
+### Unit Tests (Vitest)
+
 ```bash
-# Run tests
+# Run unit tests
 npm test
 
 # Run tests with UI
 npm run test:ui
+
+# Run unit tests with timestamped results
+npm run test:unit
 
 # Run tests with coverage
 npm run test:coverage
@@ -90,21 +95,67 @@ npm run test:coverage
 npm run type-check
 ```
 
+### BDD Tests (Cucumber + Playwright)
+
+Behavior-driven tests using Gherkin scenarios with TypeScript step definitions:
+
+```bash
+# Run all BDD tests (terminal and browser)
+npm run test:bdd
+
+# Run terminal BDD tests only
+npm run test:bdd:terminal
+
+# Run browser BDD tests only
+npm run test:bdd:browser
+
+# Run browser BDD tests in CI mode (headless)
+npm run test:bdd:browser:ci
+
+# Run all tests (unit + BDD)
+npm run test:all
+```
+
+**Test Structure:**
+- Features: `features/*.feature` (Gherkin scenarios)
+- Terminal step definitions: `test-steps/terminal/*.steps.ts` (TypeScript)
+- Browser step definitions: `test-steps/browser/*.steps.ts` (TypeScript with Playwright)
+- Test results: `test-results/{unit,bdd}/{terminal,browser}/{timestamp}/` with `latest/` symlink
+
+All test step files are written in TypeScript and executed using `tsx`.
+
 ## Project Structure
 
 ```
 demo/
 ├── src/
+│   ├── commands/            # Command implementations
+│   │   └── index.tsx        # All command definitions
 │   ├── components/          # Ink React components
-│   │   ├── Greeter.tsx      # Greeting component
-│   │   └── Info.tsx         # Info display component
+│   │   ├── InteractiveShell.tsx  # Interactive terminal shell
+│   │   ├── PromptGreet.tsx       # Greeting prompt component
+│   │   └── ui/              # UI components (shadcn)
 │   ├── web/                 # Web browser entry points
 │   │   ├── App.tsx          # Browser React app
+│   │   ├── console-helpers.ts    # Browser console CLI
 │   │   └── index.tsx        # Web entry point
 │   ├── cli.tsx              # CLI setup with Commander + Ink
 │   ├── cli-node.tsx         # Node.js CLI entry point
-│   ├── index.ts             # Core functionality
-│   └── index.test.ts        # Tests
+│   └── program.ts           # Commander program configuration
+├── tests/                   # Unit tests (mirrors src structure)
+│   └── commands/
+│       └── index.test.tsx   # Command tests
+├── test-steps/              # BDD step definitions (TypeScript)
+│   ├── terminal/            # Terminal BDD steps
+│   │   └── greet.steps.ts
+│   └── browser/             # Browser BDD steps
+│       └── greet.steps.ts
+├── features/                # Gherkin feature files
+│   └── greet.feature
+├── test-results/            # Test outputs (timestamped + latest)
+│   ├── unit/
+│   ├── bdd/terminal/
+│   └── bdd/browser/
 ├── public/                  # Static web assets
 ├── dist/                    # Build output
 ├── index.html               # Web app HTML
@@ -221,11 +272,11 @@ This demo implements the following principles:
 Areas for expansion:
 
 - [ ] Add Tinybase for persistence layer
-- [ ] Implement ink-web for full Ink UI in browser (when stable)
 - [ ] Add peer-to-peer communication features
 - [ ] Expand command set with real-world examples
-- [ ] Add BDD testing with Gherkin scenarios
 - [ ] Deploy web version to hosting platform
+- [x] Implement ink-web for full Ink UI in browser
+- [x] Add BDD testing with Gherkin scenarios
 
 ## License
 
