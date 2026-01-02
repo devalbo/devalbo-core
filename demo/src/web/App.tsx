@@ -43,7 +43,7 @@ export const App: React.FC = () => {
         </InkTerminalBox>
       </div>
 
-      <div style={{
+      {/* <div style={{
         marginTop: '40px',
         padding: '15px',
         background: '#f0f9ff',
@@ -79,7 +79,7 @@ node dist/cli.js greet --interactive
 node dist/cli.js info
 node dist/cli.js --help`}
         </pre>
-      </div>
+      </div> */}
     </div>
   );
 };

@@ -58,29 +58,42 @@ export const commands = {
   },
 
   help: (args?: string[], options?: CommandOptions): CommandResult => {
-    try {
-      // Use Commander's built-in help generation
-      const program = createProgram();
-      const helpText = program.helpInformation();
+    // Generate help text from Commander's configuration
+    // Works in both browser and terminal
+    const program = createProgram();
+    const lines: string[] = [];
 
-      return {
-        component: (
-          <Box flexDirection="column">
-            <Text>{helpText}</Text>
-          </Box>
-        )
-      };
-    } catch (error) {
-      console.error('Help command error:', error);
-      return {
-        component: (
-          <Box flexDirection="column">
-            <Text color="red">Error generating help: {String(error)}</Text>
-          </Box>
-        ),
-        error: String(error)
-      };
-    }
+    lines.push(`Usage: ${program.name()} [options] [command]`);
+    lines.push('');
+    lines.push(program.description());
+    lines.push('');
+    lines.push('Options:');
+    lines.push('  -V, --version              output the version number');
+    lines.push('  -h, --help                 display help for command');
+    lines.push('');
+    lines.push('Commands:');
+
+    // Generate command list from Commander's configuration
+    program.commands.forEach(cmd => {
+      const name = cmd.name();
+      const args = cmd.registeredArguments?.map(arg =>
+        `[${arg.name()}${arg.variadic ? '...' : ''}]`
+      ).join(' ') || '';
+      const opts = cmd.options?.length > 0 ? '[options] ' : '';
+      const desc = cmd.description();
+      const fullName = `${name} ${opts}${args}`.trim();
+      lines.push(`  ${fullName.padEnd(27)} ${desc}`);
+    });
+
+    const helpText = lines.join('\n');
+
+    return {
+      component: (
+        <Box flexDirection="column">
+          <Text>{helpText}</Text>
+        </Box>
+      )
+    };
   }
 };
 
