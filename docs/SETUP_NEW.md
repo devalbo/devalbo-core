@@ -33,6 +33,8 @@ npm install --save-dev typescript @types/node
 npm install --save-dev vite
 ```
 
+Make sure JSX/TSX is supported as well.
+
 ## Step 3: Install Preferred Libraries
 
 Based on devalbo-core principles, install the recommended libraries for the following phases:
@@ -46,6 +48,15 @@ npm install zod
 
 ### User Interaction Setup with React Basics
 
+**Important:** `ink-web` is currently experimental and not available as a stable npm package (see [ink-web.dev](https://ink-web.dev)).
+
+The recommended approach is to:
+- Use **Ink** for terminal UI (React components in the terminal)
+- Use **standard React** for browser UI (React components in the browser)
+- Share business logic between both environments
+
+See the `/demo` project for a complete working example following this pattern.
+
 #### Terminal
 
 ```bash
@@ -56,7 +67,10 @@ npm install --save-dev @types/react
 
 **Setup:** Ink allows you to build terminal UIs using React components. Create terminal components using React and Ink's built-in components.
 
-#### Web Browser
+#### Web Browser (as web page)
+
+Install Ink Web as described here: https://www.ink-web.dev/docs/installation/vite
+Install Ink Web components as described here: https://www.ink-web.dev/docs/components
 
 ```bash
 # React for web browser interfaces
@@ -77,19 +91,33 @@ npm install @tanstack/react-query
 - Tanstack Query provides powerful data synchronization for React applications
 - If using React, also install the Vite React plugin: `npm install --save-dev @vitejs/plugin-react` (see Step 5 for Vite configuration)
 
-### Command Line Parser
 
-The command line parser must support the following environments:
+### Command Parser
+
+The command parser must support the following environments:
 * terminal
-* web browser
+* web browser page
+* web browser dev console/window object
 
+It is critical that there only be a single configuration for the command parser. It has to be connected to the terminal and in-browser command line libraries, but once the command is entered and feedback is required from the user, there should be no distinction at the environment level!
+
+**Option 1: yargs (recommended for simple use cases)**
 ```bash
 # yargs - Command-line argument parser (works in both terminal and browser)
 npm install yargs
 npm install --save-dev @types/yargs
 ```
 
-**Setup:** yargs can be used in both Node.js (with `process.argv`) and browser environments (with mock argv arrays). See Step 8 for CLI setup that works in both environments.
+**Option 2: commander + clack (recommended for interactive CLIs)**
+```bash
+# commander - Command-line framework
+npm install commander
+
+# @clack/prompts - Beautiful prompts for interactive CLI
+npm install @clack/prompts
+```
+
+**Setup:** Both yargs and commander can be used in both Node.js (with `process.argv`) and browser environments (with mock argv arrays). Clack provides interactive prompts for better user experience. See Step 8 for CLI setup that works in both environments.
 
 ### Persistence
 
@@ -134,11 +162,14 @@ The ideal sharing/communication layer will work without modification in the foll
 ### Testing Framework
 
 ```bash
-# Jest for unit testing
-npm install --save-dev jest @types/jest ts-jest
+# Vitest for unit testing (recommended - integrates with Vite)
+npm install --save-dev vitest @vitest/ui
+
+# Alternative: Jest for unit testing
+# npm install --save-dev jest @types/jest ts-jest
 
 # BDD testing framework (under consideration)
-# Options: Cucumber.js, Mocha with Chai, Jest with custom matchers
+# Options: Cucumber.js, Mocha with Chai, Vitest with custom matchers
 # Installation commands will be added once a specific framework is chosen
 ```
 
@@ -295,23 +326,36 @@ mkdir -p public
 
 ## Step 6: Configure Testing
 
-Create a `jest.config.js` file in the project root:
+Create a `vitest.config.ts` file in the project root:
 
-```javascript
-module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/*.d.ts',
-    '!src/**/*.test.ts',
-    '!src/**/*.spec.ts'
-  ],
-  coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html']
-};
+```typescript
+import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html'],
+      exclude: [
+        'node_modules/',
+        'dist/',
+        '**/*.d.ts',
+        '**/*.test.ts',
+        '**/*.spec.ts',
+        'vite.config.ts',
+        'vitest.config.ts'
+      ]
+    }
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src')
+    }
+  }
+});
 ```
 
 Update `package.json` to include test scripts and build commands:
@@ -319,9 +363,9 @@ Update `package.json` to include test scripts and build commands:
 ```json
 {
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
     "build": "vite build && vite build --mode node",
     "build:web": "vite build",
     "build:cli": "vite build --mode node",
@@ -431,19 +475,21 @@ After building (`npm run build`), the CLI can be used in two ways:
 Create `src/index.test.ts` to demonstrate testing setup:
 
 ```typescript
+import { describe, it, expect, vi } from 'vitest';
 import { main } from './index';
 
 describe('$PROJECT_NAME', () => {
   it('should have a main function', () => {
     // Arrange
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-    
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
     // Act
     main();
-    
+
     // Assert
     expect(consoleSpy).toHaveBeenCalledWith('Hello from $PROJECT_NAME');
-    
+
+    // Cleanup
     consoleSpy.mockRestore();
   });
 });
