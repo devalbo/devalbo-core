@@ -4,7 +4,8 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const projectRoot = join(__dirname, '..');
+const projectRoot = join(__dirname, '..', '..');
+const testsRoot = join(projectRoot, 'tests');
 
 interface TestResults {
   numTotalTests?: number;
@@ -35,7 +36,7 @@ interface Stats {
 
 // Get timestamp from argument or use 'latest'
 const timestampArg = process.argv[2] || 'latest';
-const testDir = join(projectRoot, 'test-results/unit', timestampArg);
+const testDir = join(testsRoot, 'results', 'unit', timestampArg);
 
 // Read JSON test results
 const jsonPath = join(testDir, 'results.json');

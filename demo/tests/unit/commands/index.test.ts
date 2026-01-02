@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { commands } from '../../src/commands/index';
+import { commands } from '@/commands/index';
 
 describe('commands', () => {
   describe('greet', () => {

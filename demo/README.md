@@ -117,12 +117,14 @@ npm run test:all
 ```
 
 **Test Structure:**
-- Features: `features/*.feature` (Gherkin scenarios)
-- Terminal step definitions: `test-steps/terminal/*.steps.ts` (TypeScript)
-- Browser step definitions: `test-steps/browser/*.steps.ts` (TypeScript with Playwright)
-- Test results: `test-results/{unit,bdd}/{terminal,browser}/{timestamp}/` with `latest/` symlink
+All tests are consolidated under the `tests/` directory:
+- Unit tests: `tests/unit/` (mirrors `src/` structure)
+- BDD features: `tests/bdd/features/*.feature` (Gherkin scenarios)
+- BDD steps: `tests/bdd/steps/{terminal,browser}/*.steps.ts` (TypeScript)
+- Test scripts: `tests/scripts/` (helper scripts)
+- Test results: `tests/results/{unit,bdd}/{terminal,browser}/{timestamp}/` with `latest/` symlink
 
-All test step files are written in TypeScript and executed using `tsx`.
+All test files are written in TypeScript and executed using `vitest` (unit) or `tsx` (BDD).
 
 ## Project Structure
 
@@ -142,20 +144,26 @@ demo/
 │   ├── cli.tsx              # CLI setup with Commander + Ink
 │   ├── cli-node.tsx         # Node.js CLI entry point
 │   └── program.ts           # Commander program configuration
-├── tests/                   # Unit tests (mirrors src structure)
-│   └── commands/
-│       └── index.test.tsx   # Command tests
-├── test-steps/              # BDD step definitions (TypeScript)
-│   ├── terminal/            # Terminal BDD steps
-│   │   └── greet.steps.ts
-│   └── browser/             # Browser BDD steps
-│       └── greet.steps.ts
-├── features/                # Gherkin feature files
-│   └── greet.feature
-├── test-results/            # Test outputs (timestamped + latest)
-│   ├── unit/
-│   ├── bdd/terminal/
-│   └── bdd/browser/
+├── tests/                   # All test-related files
+│   ├── unit/                # Unit tests (mirrors src structure)
+│   │   └── commands/
+│   │       └── index.test.ts
+│   ├── bdd/                 # Behavior-driven tests
+│   │   ├── features/        # Gherkin scenarios
+│   │   │   └── greet.feature
+│   │   └── steps/           # Step definitions
+│   │       ├── terminal/
+│   │       │   └── greet.steps.ts
+│   │       └── browser/
+│   │           └── greet.steps.ts
+│   ├── scripts/             # Test helper scripts
+│   │   ├── generate-html-report.ts
+│   │   └── copy-test-results.ts
+│   └── results/             # Test outputs (timestamped + latest)
+│       ├── unit/
+│       └── bdd/
+│           ├── terminal/
+│           └── browser/
 ├── public/                  # Static web assets
 ├── dist/                    # Build output
 ├── index.html               # Web app HTML

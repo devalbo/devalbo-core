@@ -4,7 +4,8 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const projectRoot = join(__dirname, '..');
+const projectRoot = join(__dirname, '..', '..');
+const testsRoot = join(projectRoot, 'tests');
 
 // Get arguments: test type and timestamp
 const [testType, timestamp] = process.argv.slice(2);
@@ -14,8 +15,8 @@ if (!testType || !timestamp) {
   process.exit(1);
 }
 
-const sourceDir = join(projectRoot, 'test-results', testType, timestamp);
-const latestDir = join(projectRoot, 'test-results', testType, 'latest');
+const sourceDir = join(testsRoot, 'results', testType, timestamp);
+const latestDir = join(testsRoot, 'results', testType, 'latest');
 
 try {
   // Ensure source exists

@@ -3,6 +3,8 @@ import { Spinner } from '../components/ui/spinner';
 import { Box, Text } from 'ink';
 import { PromptGreet } from '../components/PromptGreet';
 import { createProgram } from '../program';
+import { withValidation } from './with-validation';
+import { validateGreetArgs } from '../lib/validate-args';
 
 export interface CommandResult {
   component: React.ReactNode;
@@ -16,7 +18,7 @@ export interface CommandOptions {
 
 export const commands = {
   greet: (args: string[], options?: CommandOptions): CommandResult => {
-    // If interactive mode, return the prompt component
+    // If explicitly interactive mode, always show prompt
     if (options?.interactive) {
       const initialName = args.join(' ');
       return {
@@ -24,15 +26,39 @@ export const commands = {
       };
     }
 
-    // Otherwise, return immediate greeting
-    const name = args.join(' ') || 'World';
-    return {
-      component: (
+    // Use Effect validation to auto-prompt for missing arguments
+    return withValidation(
+      validateGreetArgs(args),
+      // On success: render greeting with validated name
+      ({ name }) => (
         <Box flexDirection="column" padding={1}>
           <Text color="green">Hello, {name}!</Text>
         </Box>
-      )
-    };
+      ),
+      // On missing argument: check if we can use interactive prompt
+      (error) => {
+        // In non-TTY environments (like tests), use default value directly
+        const isTTY = typeof process !== 'undefined' && process.stdin && process.stdin.isTTY;
+        
+        if (!isTTY && error.defaultValue) {
+          // Non-interactive: use default value
+          return (
+            <Box flexDirection="column" padding={1}>
+              <Text color="green">Hello, {error.defaultValue}!</Text>
+            </Box>
+          );
+        }
+        
+        // Interactive TTY: show prompt
+        return (
+          <PromptGreet
+            initialName={error.defaultValue}
+            promptMessage={error.message}
+            onComplete={options?.onComplete}
+          />
+        );
+      }
+    );
   },
 
   info: (args?: string[], options?: CommandOptions): CommandResult => {

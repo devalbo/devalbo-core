@@ -4,10 +4,15 @@ import { TextInput } from './ui/text-input';
 
 export interface PromptGreetProps {
   initialName?: string;
+  promptMessage?: string;
   onComplete?: (name: string) => void;
 }
 
-export const PromptGreet: React.FC<PromptGreetProps> = ({ initialName = '', onComplete }) => {
+export const PromptGreet: React.FC<PromptGreetProps> = ({
+  initialName = '',
+  promptMessage = 'Who would you like to greet?',
+  onComplete
+}) => {
   const [name, setName] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [finalName, setFinalName] = useState('');
@@ -31,7 +36,7 @@ export const PromptGreet: React.FC<PromptGreetProps> = ({ initialName = '', onCo
     <Box flexDirection="column" padding={1}>
       <Text bold color="cyan">Interactive Greeter</Text>
       <Box marginTop={1}>
-        <Text>Who would you like to greet? </Text>
+        <Text>{promptMessage} </Text>
       </Box>
       <Box marginTop={1}>
         <TextInput

@@ -187,11 +187,19 @@ mkdir -p src/commands
 mkdir -p src/components/ui
 mkdir -p src/web
 mkdir -p public
-mkdir -p tests
-mkdir -p features
-mkdir -p test-steps/terminal
-mkdir -p test-steps/browser
+mkdir -p tests/unit
+mkdir -p tests/bdd/features
+mkdir -p tests/bdd/steps/terminal
+mkdir -p tests/bdd/steps/browser
+mkdir -p tests/scripts
 ```
+
+**Note:** All test-related files are organized under the `tests/` directory:
+- `tests/unit/` - Unit tests mirroring src structure
+- `tests/bdd/features/` - Gherkin feature files
+- `tests/bdd/steps/` - BDD step definitions
+- `tests/scripts/` - Test helper scripts
+- `tests/results/` - Test outputs (generated automatically)
 
 ### Set up Testing
 #### Install/Configure Vitest
@@ -210,10 +218,16 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['tests/**/*.{test,spec}.{ts,tsx}'],
+    include: ['tests/unit/**/*.{test,spec}.{ts,tsx}'],
+    reporters: ['default', 'json', 'junit'],
+    outputFile: {
+      json: `./${process.env.TEST_OUTPUT_DIR || 'tests/results/unit/latest'}/results.json`,
+      junit: `./${process.env.TEST_OUTPUT_DIR || 'tests/results/unit/latest'}/junit.xml`
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
+      reportsDirectory: `./${process.env.TEST_OUTPUT_DIR || 'tests/results/unit/latest'}/coverage`,
       exclude: [
         'node_modules/',
         'dist/',
@@ -233,7 +247,10 @@ export default defineConfig({
 });
 ```
 
-**Note:** Unit tests are organized in the `tests/` directory with a structure that mirrors `src/`. For example, tests for `src/commands/index.tsx` go in `tests/commands/index.test.tsx`.
+**Note:** All test-related files are consolidated under `tests/`:
+- Unit tests in `tests/unit/` mirror the `src/` directory structure
+- Test results output to `tests/results/`
+- For example: `src/commands/index.tsx` → `tests/unit/commands/index.test.tsx`
 
 
 #### Install Behavior Testing Framework
@@ -262,17 +279,9 @@ Add a postinstall script to `package.json` to ensure browsers are installed:
 }
 ```
 
-Create directory structure for BDD tests:
+BDD test directories are created as part of the project structure above (see `tests/bdd/`).
 
-```bash
-mkdir -p features
-mkdir -p test-steps/terminal
-mkdir -p test-steps/browser
-mkdir -p test-results/bdd/terminal
-mkdir -p test-results/bdd/browser
-```
-
-Create a feature file `features/greet.feature`:
+Create a feature file `tests/bdd/features/greet.feature`:
 
 ```gherkin
 Feature: Greet Command
@@ -293,7 +302,7 @@ Feature: Greet Command
     Then I should see "Available Commands"
 ```
 
-Create terminal step definitions `test-steps/terminal/greet.steps.ts`:
+Create terminal step definitions `tests/bdd/steps/terminal/greet.steps.ts`:
 
 ```typescript
 import { When, Then, Before, After } from '@cucumber/cucumber';
@@ -359,7 +368,7 @@ Then('I should see {string}', function (expectedText: string) {
 });
 ```
 
-Create browser step definitions `test-steps/browser/greet.steps.ts`:
+Create browser step definitions `tests/bdd/steps/browser/greet.steps.ts`:
 
 ```typescript
 import { When, Then, Before, After, BeforeAll, AfterAll, setDefaultTimeout } from '@cucumber/cucumber';
@@ -503,69 +512,90 @@ export default defineConfig({
 });
 ```
 
-Create a script to copy timestamped results to `latest` folder. Create `scripts/copy-test-results.ts`:
+Create a script to copy timestamped results to `latest` folder. Create `tests/scripts/copy-test-results.ts`:
 
 ```typescript
-import { cpSync } from 'fs';
-import { join } from 'path';
+#!/usr/bin/env node
+import { cpSync, mkdirSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const projectRoot = join(__dirname, '..', '..');
+const testsRoot = join(projectRoot, 'tests');
 
 const [testType, timestamp] = process.argv.slice(2);
 
 if (!testType || !timestamp) {
-  console.error('Usage: tsx scripts/copy-test-results.ts <testType> <timestamp>');
+  console.error('Usage: copy-test-results.ts <test-type> <timestamp>');
   process.exit(1);
 }
 
-const projectRoot = process.cwd();
-const sourceDir = join(projectRoot, 'test-results', testType, timestamp);
-const latestDir = join(projectRoot, 'test-results', testType, 'latest');
+const sourceDir = join(testsRoot, 'results', testType, timestamp);
+const latestDir = join(testsRoot, 'results', testType, 'latest');
 
-console.log(`Copying ${sourceDir} to ${latestDir}...`);
-cpSync(sourceDir, latestDir, { recursive: true, force: true });
-console.log('Done!');
+try {
+  mkdirSync(sourceDir, { recursive: true });
+  cpSync(sourceDir, latestDir, { recursive: true, force: true });
+  console.log(`Copied ${sourceDir} to ${latestDir}`);
+} catch (error) {
+  console.error('Error copying test results:', error);
+  process.exit(1);
+}
 ```
 
-Create a script to generate HTML reports from Vitest JSON output. Create `scripts/generate-html-report.ts`:
+Create a script to generate HTML reports from Vitest JSON output. Create `tests/scripts/generate-html-report.ts`:
 
 ```typescript
-import { readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+#!/usr/bin/env node
+import { readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-const timestamp = process.argv[2] || 'latest';
-const projectRoot = process.cwd();
-const testDir = join(projectRoot, 'test-results/unit', timestamp);
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const projectRoot = join(__dirname, '..', '..');
+const testsRoot = join(projectRoot, 'tests');
+
+const timestampArg = process.argv[2] || 'latest';
+const testDir = join(testsRoot, 'results', 'unit', timestampArg);
 const jsonPath = join(testDir, 'results.json');
 
 const data = JSON.parse(readFileSync(jsonPath, 'utf-8'));
 
-const totalTests = data.numTotalTests || 0;
-const passedTests = data.numPassedTests || 0;
-const failedTests = data.numFailedTests || 0;
+const stats = {
+  passed: data.numPassedTests || 0,
+  failed: data.numFailedTests || 0,
+  skipped: data.numPendingTests || 0,
+  total: data.numTotalTests || 0
+};
 
 const html = `<!DOCTYPE html>
 <html>
 <head>
-  <title>Test Results - ${timestamp}</title>
+  <title>Test Results - ${timestampArg}</title>
   <style>
-    body { font-family: system-ui; margin: 20px; }
-    .summary { background: #f5f5f5; padding: 20px; border-radius: 8px; }
+    body { font-family: system-ui; margin: 20px; background: #f5f5f5; }
+    .summary { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .pass { color: green; }
     .fail { color: red; }
+    .skip { color: orange; }
   </style>
 </head>
 <body>
-  <h1>Test Results - ${timestamp}</h1>
+  <h1>Test Results</h1>
   <div class="summary">
-    <p>Total: ${totalTests}</p>
-    <p class="pass">Passed: ${passedTests}</p>
-    <p class="fail">Failed: ${failedTests}</p>
+    <p>Total: ${stats.total}</p>
+    <p class="pass">Passed: ${stats.passed}</p>
+    <p class="fail">Failed: ${stats.failed}</p>
+    <p class="skip">Skipped: ${stats.skipped}</p>
   </div>
 </body>
 </html>`;
 
 const outputPath = join(testDir, 'report.html');
+mkdirSync(dirname(outputPath), { recursive: true });
 writeFileSync(outputPath, html);
-console.log(`HTML report generated: ${outputPath}`);
+console.log('HTML report written to:', outputPath);
 ```
 
 Update package.json scripts to generate timestamped test results:
@@ -574,22 +604,22 @@ Update package.json scripts to generate timestamped test results:
 {
   "scripts": {
     "test": "vitest",
-    "test:unit": "TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S) && TEST_OUTPUT_DIR=test-results/unit/$TIMESTAMP vitest run && tsx scripts/generate-html-report.ts $TIMESTAMP && tsx scripts/copy-test-results.ts unit $TIMESTAMP",
+    "test:unit": "TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S) && TEST_OUTPUT_DIR=tests/results/unit/$TIMESTAMP vitest run && tsx tests/scripts/generate-html-report.ts $TIMESTAMP && tsx tests/scripts/copy-test-results.ts unit $TIMESTAMP",
     "test:bdd": "npm run test:bdd:terminal && npm run test:bdd:browser",
-    "test:bdd:terminal": "TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S) && npm run build:cli && cucumber-js features --import test-steps/terminal/greet.steps.ts --format progress --format json:test-results/bdd/terminal/$TIMESTAMP/cucumber-report.json --format html:test-results/bdd/terminal/$TIMESTAMP/cucumber-report.html && tsx scripts/copy-test-results.ts bdd/terminal $TIMESTAMP",
-    "test:bdd:browser": "TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S) && cucumber-js features --import test-steps/browser/greet.steps.ts --format progress --format json:test-results/bdd/browser/$TIMESTAMP/cucumber-report.json --format html:test-results/bdd/browser/$TIMESTAMP/cucumber-report.html && tsx scripts/copy-test-results.ts bdd/browser $TIMESTAMP",
+    "test:bdd:terminal": "TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S) && npm run build:cli && cucumber-js tests/bdd/features --import tests/bdd/steps/terminal/greet.steps.ts --format progress --format json:tests/results/bdd/terminal/$TIMESTAMP/cucumber-report.json --format html:tests/results/bdd/terminal/$TIMESTAMP/cucumber-report.html && tsx tests/scripts/copy-test-results.ts bdd/terminal $TIMESTAMP",
+    "test:bdd:browser": "TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S) && cucumber-js tests/bdd/features --import tests/bdd/steps/browser/greet.steps.ts --format progress --format json:tests/results/bdd/browser/$TIMESTAMP/cucumber-report.json --format html:tests/results/bdd/browser/$TIMESTAMP/cucumber-report.html && tsx tests/scripts/copy-test-results.ts bdd/browser $TIMESTAMP",
     "test:all": "npm run test && npm run test:bdd"
   }
 }
 ```
 
-**Test results structure:**
-- `test-results/unit/{timestamp}/` - Timestamped unit test results
-- `test-results/unit/latest/` - Latest unit test results (copy of most recent)
-- `test-results/bdd/terminal/{timestamp}/` - Timestamped terminal BDD results
-- `test-results/bdd/terminal/latest/` - Latest terminal BDD results
-- `test-results/bdd/browser/{timestamp}/` - Timestamped browser BDD results
-- `test-results/bdd/browser/latest/` - Latest browser BDD results
+**Test results structure (all under `tests/` directory):**
+- `tests/results/unit/{timestamp}/` - Timestamped unit test results
+- `tests/results/unit/latest/` - Latest unit test results (copy of most recent)
+- `tests/results/bdd/terminal/{timestamp}/` - Timestamped terminal BDD results
+- `tests/results/bdd/terminal/latest/` - Latest terminal BDD results
+- `tests/results/bdd/browser/{timestamp}/` - Timestamped browser BDD results
+- `tests/results/bdd/browser/latest/` - Latest browser BDD results
 
 
 ### Install UI Libraries
@@ -1021,11 +1051,11 @@ Create `index.html`:
 
 ## Step 12: Create Tests
 
-Create `tests/commands/index.test.tsx` (mirroring the `src/commands/index.tsx` structure):
+Create `tests/unit/commands/index.test.tsx` (mirroring the `src/commands/index.tsx` structure):
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { commands } from '../../src/commands/index';
+import { commands } from '@/commands/index';
 
 describe('commands', () => {
   describe('greet', () => {
@@ -1062,9 +1092,9 @@ describe('commands', () => {
 ```
 
 **Test Organization:**
-- Unit tests live in `tests/` directory
+- Unit tests live in `tests/unit/` directory
 - Test file structure mirrors `src/` directory structure
-- Import paths use relative paths like `'../../src/commands/index'`
+- Import paths use the `@/` alias (e.g., `import { commands } from '@/commands/index'`)
 - Follow Arrange/Act/Assert pattern for clarity
 
 ## Step 13: Create .gitignore
@@ -1073,7 +1103,7 @@ describe('commands', () => {
 node_modules/
 dist/
 coverage/
-test-results/
+tests/results/
 *.log
 .DS_Store
 .env
