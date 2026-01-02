@@ -2,6 +2,8 @@
 
 This guide provides explicit steps for setting up a new TypeScript project using npm, following the devalbo-core principles. Replace `$PROJECT_NAME` with your actual project name throughout this guide.
 
+This guide reflects the actual implementation in the `/demo` project, which demonstrates a dual-mode CLI application that works in both terminal and browser environments.
+
 ## Prerequisites
 
 Before starting, ensure you have the following installed:
@@ -14,7 +16,10 @@ node --version
 npm --version
 ```
 
-## Step 1: Initialize the Project
+
+## Setup Project
+
+### Initialize the Project
 
 Create a new directory and initialize an npm project:
 
@@ -24,164 +29,31 @@ cd $PROJECT_NAME
 npm init -y
 ```
 
-## Step 2: Install TypeScript and Core Dependencies
+Update `package.json` to use ES modules:
+```json
+{
+  "type": "module"
+}
+```
 
-Install TypeScript and essential development dependencies:
+
+### Install Core Dependencies
+
+Install TypeScript, Vite, and React:
 
 ```bash
 npm install --save-dev typescript @types/node
-npm install --save-dev vite
-```
-
-Make sure JSX/TSX is supported as well.
-
-## Step 3: Install Preferred Libraries
-
-Based on devalbo-core principles, install the recommended libraries for the following phases:
-
-### Type System and Validation
-
-```bash
-# Zod for runtime type validation and serialization
-npm install zod
-```
-
-### User Interaction Setup with React Basics
-
-**Important:** `ink-web` is currently experimental and not available as a stable npm package (see [ink-web.dev](https://ink-web.dev)).
-
-The recommended approach is to:
-- Use **Ink** for terminal UI (React components in the terminal)
-- Use **standard React** for browser UI (React components in the browser)
-- Share business logic between both environments
-
-See the `/demo` project for a complete working example following this pattern.
-
-#### Terminal
-
-```bash
-# Ink - React for terminal/CLI interfaces
-npm install ink react
+npm install --save-dev vite @vitejs/plugin-react
+npm install react
 npm install --save-dev @types/react
 ```
 
-**Setup:** Ink allows you to build terminal UIs using React components. Create terminal components using React and Ink's built-in components.
-
-#### Web Browser (as web page)
-
-Install Ink Web as described here: https://www.ink-web.dev/docs/installation/vite
-Install Ink Web components as described here: https://www.ink-web.dev/docs/components
-
+#### TypeScript
 ```bash
-# React for web browser interfaces
-npm install react react-dom
-npm install --save-dev @types/react @types/react-dom
-
-# Web-Ink - Use Ink components in the browser (https://www.ink-web.dev/)
-# Note: Check ink-web.dev for the latest package name and installation instructions
-# npm install @ink-web/core @ink-web/react
-
-# Tanstack Query for data fetching and state management
-npm install @tanstack/react-query
+npm install --save-dev typescript @types/node
 ```
 
-**Setup:** 
-- React DOM is used for rendering React components in the browser
-- Web-Ink allows sharing Ink terminal components in browser environments
-- Tanstack Query provides powerful data synchronization for React applications
-- If using React, also install the Vite React plugin: `npm install --save-dev @vitejs/plugin-react` (see Step 5 for Vite configuration)
-
-
-### Command Parser
-
-The command parser must support the following environments:
-* terminal
-* web browser page
-* web browser dev console/window object
-
-It is critical that there only be a single configuration for the command parser. It has to be connected to the terminal and in-browser command line libraries, but once the command is entered and feedback is required from the user, there should be no distinction at the environment level!
-
-**Option 1: yargs (recommended for simple use cases)**
-```bash
-# yargs - Command-line argument parser (works in both terminal and browser)
-npm install yargs
-npm install --save-dev @types/yargs
-```
-
-**Option 2: commander + clack (recommended for interactive CLIs)**
-```bash
-# commander - Command-line framework
-npm install commander
-
-# @clack/prompts - Beautiful prompts for interactive CLI
-npm install @clack/prompts
-```
-
-**Setup:** Both yargs and commander can be used in both Node.js (with `process.argv`) and browser environments (with mock argv arrays). Clack provides interactive prompts for better user experience. See Step 8 for CLI setup that works in both environments.
-
-### Persistence
-
-The ideal persistence layer will work without modification in the following environments:
-* terminal
-* web browser
-
-```bash
-# Tinybase - Reactive data store that works in both Node.js and browser
-npm install tinybase
-# Optional: Additional Tinybase packages for specific features
-# npm install @tinybase/persisters  # For persistence adapters
-# npm install @tinybase/react  # For React bindings
-```
-
-**Setup:** Tinybase provides a reactive data store that works in both Node.js and browser environments. The core `tinybase` package includes the store functionality. Additional packages like `@tinybase/persisters` add persistence capabilities for both browser (IndexedDB, LocalStorage) and Node.js (file system) environments.
-
-**Note:** Tinybase is under consideration. Alternative persistence options include:
-- LocalStorage/SessionStorage (browser only)
-- File system (Node.js only)
-- IndexedDB (browser only)
-- SQLite (via better-sqlite3 for Node.js, sql.js for browser)
-
-### Sharing/Communication
-
-The ideal sharing/communication layer will work without modification in the following environments:
-* terminal
-* web browser
-
-```bash
-# Peer-to-peer communication libraries (under consideration)
-# Options to explore:
-# - libp2p for peer-to-peer networking
-# - WebRTC for browser-to-browser communication
-# - WebSockets for client-server communication
-# 
-# Installation commands will be added once a specific library is chosen
-```
-
-**Note:** Sharing/communication libraries are under consideration. The choice depends on specific requirements for peer-to-peer vs. client-server architecture.
-
-### Testing Framework
-
-```bash
-# Vitest for unit testing (recommended - integrates with Vite)
-npm install --save-dev vitest @vitest/ui
-
-# Alternative: Jest for unit testing
-# npm install --save-dev jest @types/jest ts-jest
-
-# BDD testing framework (under consideration)
-# Options: Cucumber.js, Mocha with Chai, Vitest with custom matchers
-# Installation commands will be added once a specific framework is chosen
-```
-
-## Step 4: Configure TypeScript
-
-Create a `tsconfig.json` file in the project root:
-
-```bash
-npx tsc --init
-```
-
-Then update `tsconfig.json` with recommended settings:
+Create `tsconfig.json`:
 
 ```json
 {
@@ -189,7 +61,8 @@ Then update `tsconfig.json` with recommended settings:
     "target": "ES2020",
     "module": "ESNext",
     "lib": ["ES2020", "DOM"],
-    "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler",
     "rootDir": "./src",
     "outDir": "./dist",
     "strict": true,
@@ -199,42 +72,61 @@ Then update `tsconfig.json` with recommended settings:
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }
 ```
 
-## Step 5: Configure Vite
+**Key settings:**
+- `moduleResolution: "bundler"` - Required for proper module resolution with Vite
+- `jsx: "react-jsx"` - Automatic JSX runtime (no need to import React)
+- `paths` - Path aliases for cleaner imports
 
-Vite will be configured to support both web browser and Node.js CLI execution, allowing the same commands to run in both environments.
 
-Create a `vite.config.ts` file in the project root:
+
+#### Vite
+
+``` bash
+npm install --save-dev vite
+npm install react
+npm install --save-dev @types/react
+```
+
+Create `vite.config.ts`:
 
 ```typescript
 import { defineConfig } from 'vite';
-// Uncomment if using React:
-// import react from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { resolve } from 'path';
 
 export default defineConfig(({ mode }) => {
   const isNode = mode === 'node';
-  
+
   if (isNode) {
     // Node.js CLI build
     return {
+      esbuild: {
+        jsx: 'automatic',
+        jsxImportSource: 'react'
+      },
       build: {
         lib: {
-          entry: resolve(__dirname, 'src/cli-node.ts'),
+          entry: resolve(__dirname, 'src/cli-node.tsx'),
           name: '$PROJECT_NAME',
           fileName: () => 'cli.js',
-          formats: ['cjs']
+          formats: ['es']
         },
         outDir: 'dist',
         sourcemap: true,
         rollupOptions: {
-          external: ['yargs', 'yargs/helpers']
+          external: ['commander', 'ink', 'react', 'react/jsx-runtime']
         }
       },
       resolve: {
@@ -244,8 +136,8 @@ export default defineConfig(({ mode }) => {
       }
     };
   }
-  
-  // Web browser build
+
+  // Web browser build - CRITICAL: ink → ink-web alias
   return {
     root: './',
     publicDir: 'public',
@@ -261,72 +153,50 @@ export default defineConfig(({ mode }) => {
       open: true,
       host: true
     },
-    // Uncomment if using React:
-    // plugins: [react()],
-    plugins: [],
+    plugins: [react(), nodePolyfills()],
     resolve: {
       alias: {
-        '@': resolve(__dirname, 'src')
+        '@': resolve(__dirname, 'src'),
+        'ink': 'ink-web'  // KEY: This makes Ink components work in browser
       }
     }
   };
 });
 ```
 
-If using React, also install the Vite React plugin:
+**Critical configuration:**
+- `formats: ['es']` - Use ES modules for consistency
+- `ink: 'ink-web'` alias - Transparently redirects Ink imports to ink-web in browser builds
+- `nodePolyfills()` - Required for ink-web to work in browser (Buffer, process, etc.)
+
+#### React
+
+Install TypeScript, Vite, and React:
+
 ```bash
+npm install react
+npm install --save-dev @types/react
 npm install --save-dev @vitejs/plugin-react
 ```
 
-### Create Web Browser Entry Point
 
-Create an `index.html` file in the project root for web browser development:
+### Create Project Structure
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>$PROJECT_NAME</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/web/index.ts"></script>
-  </body>
-</html>
-```
-
-Create a web entry point at `src/web/index.ts`:
-
-```typescript
-// Web browser entry point
-// This allows running commands in the browser dev console
-import { setupCLI } from '../cli';
-
-// Expose CLI to the browser console
-// Usage: $PROJECT_NAME.run(['command', 'arg1', 'arg2'])
-(window as any).$PROJECT_NAME = {
-  run: async (args: string[] = []) => {
-    // Simulate process.argv for browser environment
-    const mockArgv = ['node', 'cli.js', ...args];
-    return setupCLI(mockArgv);
-  }
-};
-
-console.log('$PROJECT_NAME CLI available in browser console.');
-console.log('Usage: $PROJECT_NAME.run([\'command\', \'arg1\', \'arg2\'])');
-```
-
-Create the web directory:
 ```bash
+mkdir -p src/commands
+mkdir -p src/components/ui
 mkdir -p src/web
 mkdir -p public
 ```
 
-## Step 6: Configure Testing
+### Set up Testing
+#### Install/Configure Vitest
 
-Create a `vitest.config.ts` file in the project root:
+```bash
+npm install --save-dev vitest @vitest/ui
+```
+
+Create `vitest.config.ts`:
 
 ```typescript
 import { defineConfig } from 'vitest/config';
@@ -358,10 +228,112 @@ export default defineConfig({
 });
 ```
 
-Update `package.json` to include test scripts and build commands:
+
+#### Install Behavior Testing Framework
+
+TODO: setup installing cucumber testing
+
+#### Configure test runners and outputs
+
+When running a test command, in non-interactive mode, output each results to a well-known location per test type (e.g. unit-test, bdd). The latest version of the test should be placed in a file or directory called `latest` and placed at the root of the well-known location.
+
+### Install UI Libraries
+
+#### Terminal UI (Ink)
+
+```bash
+npm install --save-dev ink
+```
+
+**Note:** Ink is a dev dependency because it's only used for the terminal build.
+
+#### Browser UI (ink-web)
+
+##### Installation
+Follow the installation guide at https://www.ink-web.dev/docs/installation/vite
+
+```bash
+# Install ink-web
+npm install ink-web
+
+# Install xterm for terminal emulation
+npm install xterm
+npm install --save-dev @types/xterm
+
+# Install Node.js polyfills for browser compatibility
+npm install --save-dev vite-plugin-node-polyfills
+
+# Install shadcn for ink-web components
+npm install --save-dev @ink-web/shadcn-cli
+
+# Initialize shadcn
+npx shadcn@latest init
+
+# Install Tailwind CSS (required for shadcn)
+npm install tailwindcss @tailwindcss/postcss
+
+# Install ink-web components
+npx shadcn@latest add text-input
+npx shadcn@latest add spinner
+```
+
+##### Configure Tailwind CSS
+
+Create `tailwind.config.js`:
+
+```javascript
+export default {
+  content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+```
+
+Create `postcss.config.js`:
+
+```javascript
+import tailwindcss from '@tailwindcss/postcss';
+
+export default {
+  plugins: [tailwindcss()],
+};
+```
+
+Create `src/index.css`:
+
+```css
+@import 'tailwindcss';
+```
+
+
+
+#### Browser Dev Console CLI Object
+
+TODO: add some description about adding cli object for user to interact with in dev console here.
+
+
+### Install CLI Framework
+
+```bash
+# Commander for command parsing
+npm install commander
+
+# Zod for validation (optional but recommended)
+npm install zod
+```
+
+**Note:** The demo originally used `@clack/prompts` but replaced it with Ink-based interactive prompts for a unified experience across terminal and browser.
+
+
+### Update `package.json` Scripts
+
+Add the following scripts to `package.json`:
 
 ```json
 {
+  "type": "module",
   "scripts": {
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -381,66 +353,91 @@ Update `package.json` to include test scripts and build commands:
 }
 ```
 
-## Step 7: Create Project Structure
 
-Create the basic directory structure:
+### Setup Shared Commands Registry
 
-```bash
-mkdir -p src
-mkdir -p tests
-mkdir -p dist
-```
-
-Create an initial `src/index.ts` file:
+#### Create Commands
+Create `src/commands/index.tsx` - the single source of truth for all commands:
 
 ```typescript
-export function main() {
-  console.log('Hello from $PROJECT_NAME');
+import React from 'react';
+import { Box, Text } from 'ink';
+
+export interface CommandResult {
+  component: React.ReactNode;
+  error?: string;
 }
 
-// Allow running as a Node.js script
-if (require.main === module) {
-  main();
+export interface CommandOptions {
+  interactive?: boolean;
+  onComplete?: () => void;
 }
+
+export const commands = {
+  greet: (args: string[], options?: CommandOptions): CommandResult => {
+    const name = args.join(' ') || 'World';
+    return {
+      component: (
+        <Box flexDirection="column" padding={1}>
+          <Text color="green">Hello, {name}!</Text>
+        </Box>
+      )
+    };
+  },
+
+  help: (args?: string[], options?: CommandOptions): CommandResult => {
+    return {
+      component: (
+        <Box flexDirection="column">
+          <Text bold color="yellow">Available Commands:</Text>
+          <Text>  greet [name]  - Greet someone (default: World)</Text>
+          <Text>  help          - Show this help message</Text>
+        </Box>
+      )
+    };
+  }
+};
+
+export type CommandName = keyof typeof commands;
 ```
 
-## Step 8: Set Up Command-Line Interface
+#### Terminal CLI
 
-The CLI will be set up to run in both terminal (Node.js) and web browser environments.
-
-Create `src/cli.ts` that works in both environments:
+Create `src/cli.tsx`:
 
 ```typescript
-import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
+import React from 'react';
+import { render } from 'ink';
+import { Command } from 'commander';
+import { commands } from './commands';
 
-/**
- * CLI setup function that works in both Node.js and browser environments
- * @param argv - Command line arguments (defaults to process.argv in Node.js)
- */
 export async function setupCLI(argv?: string[]) {
-  const args = argv || process.argv;
-  
-  return yargs(hideBin(args))
-    .command('*', 'Default command', {}, (parsedArgs) => {
-      console.log('Running $PROJECT_NAME with args:', parsedArgs);
-    })
-    .help()
-    .parseAsync();
-}
+  const program = new Command();
 
-// Node.js entry point - only run if this is the main module
-if (typeof require !== 'undefined' && require.main === module) {
-  setupCLI().catch(console.error);
+  program
+    .name('$PROJECT_NAME')
+    .description('CLI application following devalbo-core principles')
+    .version('1.0.0');
+
+  program
+    .command('greet')
+    .description('Greet someone')
+    .argument('[name...]', 'Name to greet', [])
+    .action(async (nameArgs: string[]) => {
+      const result = commands.greet(nameArgs);
+      render(result.component);
+    });
+
+  await program.parseAsync(argv || process.argv);
+  return program;
 }
 ```
 
-Create a Node.js entry point at `src/cli-node.ts`:
+Create `src/cli-node.tsx`:
 
 ```typescript
 #!/usr/bin/env node
-// Node.js CLI entry point
-import { setupCLI } from './cli';
+import { setupCLI } from './cli.js';
 
 setupCLI().catch((error) => {
   console.error('Error:', error);
@@ -448,56 +445,259 @@ setupCLI().catch((error) => {
 });
 ```
 
-**Using the CLI:**
+#### Browser Interactive Shell
 
-After building (`npm run build`), the CLI can be used in two ways:
-
-1. **Terminal/Node.js**: 
-   ```bash
-   # Run directly
-   node dist/cli.js [args]
-   
-   # Or use npm script
-   npm run cli -- [args]
-   
-   # Or link globally (after building)
-   npm link
-   $PROJECT_NAME [args]
-   ```
-
-2. **Web Browser**:
-   - Start dev server: `npm run dev`
-   - Open http://localhost:3000
-   - In browser console: `$PROJECT_NAME.run(['arg1', 'arg2'])`
-
-## Step 9: Create Initial Test
-
-Create `src/index.test.ts` to demonstrate testing setup:
+Create `src/components/InteractiveShell.tsx`:
 
 ```typescript
-import { describe, it, expect, vi } from 'vitest';
-import { main } from './index';
+import React, { useState } from 'react';
+import { Box, Text } from 'ink';
+import { TextInput } from './ui/text-input';
+import { commands, CommandName, CommandOptions } from '../commands';
 
-describe('$PROJECT_NAME', () => {
-  it('should have a main function', () => {
-    // Arrange
-    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+interface CommandOutput {
+  command: string;
+  timestamp: Date;
+  component?: React.ReactNode;
+  error?: string;
+}
 
-    // Act
-    main();
+export const InteractiveShell: React.FC = () => {
+  const [input, setInput] = useState('');
+  const [history, setHistory] = useState<CommandOutput[]>([
+    {
+      command: 'Welcome to $PROJECT_NAME',
+      timestamp: new Date(),
+      component: <Text color="cyan">Type "help" to see available commands</Text>
+    }
+  ]);
 
-    // Assert
-    expect(consoleSpy).toHaveBeenCalledWith('Hello from $PROJECT_NAME');
+  const executeCommand = (cmd: string) => {
+    const trimmedCmd = cmd.trim();
+    const [commandName, ...args] = trimmedCmd.split(' ');
 
-    // Cleanup
-    consoleSpy.mockRestore();
+    let output: CommandOutput = {
+      command: `$ ${trimmedCmd}`,
+      timestamp: new Date()
+    };
+
+    if (commandName === 'clear') {
+      setHistory([{
+        command: 'Terminal cleared',
+        timestamp: new Date(),
+        component: <Text dimColor>Type "help" for available commands</Text>
+      }]);
+      setInput('');
+      return;
+    }
+
+    if (!commandName) return;
+
+    const command = commands[commandName.toLowerCase() as CommandName];
+    if (command) {
+      const result = command(args);
+      output.component = result.component;
+      output.error = result.error;
+    } else {
+      output.error = `Command not found: ${commandName}`;
+      output.component = <Text color="red">{output.error}</Text>;
+    }
+
+    setHistory([...history, output]);
+    setInput('');
+  };
+
+  const handleSubmit = () => {
+    if (input.trim()) {
+      executeCommand(input);
+    }
+  };
+
+  return (
+    <Box flexDirection="column" padding={1}>
+      <Box flexDirection="column" marginBottom={1}>
+        {history.map((item, i) => (
+          <Box key={i} flexDirection="column" marginBottom={1}>
+            <Text dimColor>{item.command}</Text>
+            {item.component && <Box marginLeft={2}>{item.component}</Box>}
+          </Box>
+        ))}
+      </Box>
+
+      <Box>
+        <Text color="green">$ </Text>
+        <TextInput
+          value={input}
+          onChange={setInput}
+          onSubmit={handleSubmit}
+          placeholder="Type a command..."
+        />
+      </Box>
+    </Box>
+  );
+};
+```
+
+#### Browser App
+
+##### React
+
+Create `src/web/App.tsx`:
+
+```typescript
+import React from 'react';
+import { InkTerminalBox } from 'ink-web';
+import { InteractiveShell } from '../components/InteractiveShell';
+
+export const App: React.FC = () => {
+  return (
+    <div style={{ maxWidth: '1200px', margin: '40px auto', padding: '20px' }}>
+      <h1>$PROJECT_NAME - Interactive Terminal</h1>
+
+      <div style={{
+        border: '2px solid #333',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        background: '#1e1e1e',
+        maxWidth: '900px'
+      }}>
+        <InkTerminalBox rows={25} focus>
+          <InteractiveShell />
+        </InkTerminalBox>
+      </div>
+    </div>
+  );
+};
+```
+
+Create `src/web/console-helpers.ts`:
+
+```typescript
+import { ReactNode } from 'react';
+import { commands, CommandName, CommandOptions } from '../commands';
+
+function extractText(node: ReactNode): string {
+  if (!node) return '';
+  if (typeof node === 'string' || typeof node === 'number') {
+    return String(node);
+  }
+  if (Array.isArray(node)) {
+    return node.map(extractText).join('');
+  }
+  if (typeof node === 'object' && 'props' in node) {
+    const props = (node as any).props;
+    if (props && props.children) {
+      return extractText(props.children);
+    }
+  }
+  return '';
+}
+
+function exec(commandName: string, args: string[] = [], options?: CommandOptions) {
+  const command = commands[commandName as CommandName];
+  if (!command) {
+    console.error(`❌ Command not found: ${commandName}`);
+    return null;
+  }
+
+  const result = command(args, options);
+  if (result.error) {
+    console.error(`❌ Error: ${result.error}`);
+    return result;
+  }
+
+  const text = extractText(result.component);
+  if (text) console.log(`\n${text}\n`);
+  return result;
+}
+
+export const cli = {
+  ...commands,
+  exec,
+  greet: (name?: string) => exec('greet', name ? [name] : []),
+  help: () => exec('help'),
+};
+```
+
+Create `src/web/index.tsx`:
+
+```typescript
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import '../index.css';
+import 'ink-web/css';
+import 'xterm/css/xterm.css';
+import { App } from './App';
+import { cli } from './console-helpers';
+
+// Expose CLI to browser dev console
+declare global {
+  interface Window {
+    cli: typeof cli;
+  }
+}
+
+window.cli = cli;
+
+const root = document.getElementById('root');
+if (root) {
+  createRoot(root).render(<App />);
+}
+```
+
+##### HTML Entry Point
+
+Create `index.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>$PROJECT_NAME</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/web/index.tsx"></script>
+  </body>
+</html>
+```
+
+## Step 12: Create Tests
+
+Create `src/commands/index.test.tsx`:
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { commands } from './index';
+
+describe('commands', () => {
+  describe('greet', () => {
+    it('should greet with default name', () => {
+      const result = commands.greet([]);
+      expect(result.component).toBeDefined();
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should greet with specific name', () => {
+      const result = commands.greet(['Alice']);
+      expect(result.component).toBeDefined();
+      expect(result.error).toBeUndefined();
+    });
+  });
+
+  describe('help', () => {
+    it('should return help component', () => {
+      const result = commands.help();
+      expect(result.component).toBeDefined();
+      expect(result.error).toBeUndefined();
+    });
   });
 });
 ```
 
-## Step 10: Create .gitignore
-
-Create a `.gitignore` file:
+## Step 13: Create .gitignore
 
 ```
 node_modules/
@@ -509,85 +709,66 @@ coverage/
 .env.local
 ```
 
-## Step 11: Verify Setup
-
-Run the following commands to verify everything is set up correctly:
+## Step 14: Verify Setup
 
 ```bash
 # Type check
 npm run type-check
 
-# Build both web application and CLI
-npm run build
-
-# Test the CLI in terminal
-npm run cli -- --help
-# Or directly:
-node dist/cli.js --help
-
-# Start the development server (for web browser testing)
-npm run dev
-# Then open http://localhost:3000 in your browser
-# You can test commands in the browser console using:
-# $PROJECT_NAME.run(['--help'])
-# $PROJECT_NAME.run(['command', 'arg1'])
-
 # Run tests
 npm test
 
-# Run tests with coverage
-npm run test:coverage
+# Build both web and CLI
+npm run build
+
+# Test the CLI
+node dist/cli.js greet Alice
+
+# Start dev server
+npm run dev
+# Open http://localhost:3000
+# Try in browser console: cli.greet('World')
 ```
 
-**Dual-mode CLI:**
-- **Terminal mode**: Run `npm run cli` or `node dist/cli.js [args]` after building
-- **Browser mode**: Open the dev server and use `$PROJECT_NAME.run([...args])` in the browser console
+## Key Architecture Decisions
 
-## Step 12: Update package.json Metadata
+### Unified Command System
+- **Single source of truth**: `src/commands/index.tsx` defines all commands
+- **Works everywhere**: Same commands run in terminal, browser shell, and browser console
+- **Type-safe**: Full TypeScript support across all environments
 
-Edit `package.json` to update project metadata:
+### Dual-Mode Rendering
+- **Terminal**: Ink renders React components to terminal using Node.js
+- **Browser**: ink-web renders same Ink components via Vite alias (`ink → ink-web`)
+- **No duplication**: Write components once, run everywhere
 
-```json
-{
-  "name": "$PROJECT_NAME",
-  "version": "1.0.0",
-  "description": "Description of $PROJECT_NAME",
-  "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "build": "vite build && vite build --mode node",
-    "build:web": "vite build",
-    "build:cli": "vite build --mode node",
-    "dev": "vite",
-    "dev:host": "vite --host",
-    "preview": "vite preview",
-    "cli": "node dist/cli.js",
-    "type-check": "tsc --noEmit"
-  },
-  "bin": {
-    "$PROJECT_NAME": "./dist/cli.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
-}
-```
+### Browser Console Access
+- **Global `cli` object**: Access commands via `window.cli` or just `cli`
+- **Helper methods**: Convenient `cli.greet('name')` syntax
+- **Text extraction**: Console output shows readable text, not React objects
 
-**Note:** The `bin` entry allows the CLI to be installed globally via `npm install -g` or linked locally via `npm link`. After building, you can run `npm link` in the project directory to make `$PROJECT_NAME` available as a command in your terminal.
+## Common Issues
+
+### Module Resolution Errors
+- **Solution**: Use `moduleResolution: "bundler"` in tsconfig.json
+
+### Missing Terminal in Browser
+- **Solution**: Import required CSS: `import 'ink-web/css'` and `import 'xterm/css/xterm.css'`
+
+### Buffer/Process Not Defined
+- **Solution**: Install and configure `vite-plugin-node-polyfills`
+
+### Ink Components Not Working in Browser
+- **Solution**: Ensure Vite config has `ink: 'ink-web'` alias for browser builds
 
 ## Next Steps
 
-After completing the setup:
+1. Review [PRINCIPLES.md](../PRINCIPLES.md)
+2. Explore the `/demo` project for a complete working example
+3. Add more commands to `src/commands/index.tsx`
+4. Create interactive prompts using Ink components
+5. Deploy your dual-mode CLI application
 
-1. Review the [PRINCIPLES.md](./PRINCIPLES.md) document
-2. Read the detailed documentation in the [/docs](./docs/) directory:
-   - [Testing](./docs/TESTING.md) - Testing principles and patterns
-   - [Design and Development](./docs/DESIGN_AND_DEVELOPMENT.md) - Development guidelines
-   - [Tooling](./docs/TOOLING.md) - Recommended tools and libraries
-   - [Deployment and Operation](./docs/DEPLOYMENT_AND_OPERATION.md) - Deployment considerations
+## Reference Implementation
 
-3. Set up your development environment according to your needs (web browser, command line, or both)
-
-4. Begin implementing your project following the Arrange/Act/Assert pattern for tests and the principles outlined in the documentation
-
+See `/demo` for a complete working example following this guide.
