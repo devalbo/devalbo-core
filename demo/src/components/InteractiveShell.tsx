@@ -68,15 +68,21 @@ export const InteractiveShell: React.FC = () => {
     // Execute command from shared registry
     const command = commands[commandName.toLowerCase() as CommandName];
     if (command) {
-      // If this is an interactive command, set the flag and pass completion callback
-      if (options.interactive) {
-        setIsInteractive(true);
-        options.onComplete = handleInteractiveComplete;
-      }
+      try {
+        // If this is an interactive command, set the flag and pass completion callback
+        if (options.interactive) {
+          setIsInteractive(true);
+          options.onComplete = handleInteractiveComplete;
+        }
 
-      const result = command(args, options);
-      output.component = result.component;
-      output.error = result.error;
+        const result = command(args, options);
+        output.component = result.component;
+        output.error = result.error;
+      } catch (error) {
+        console.error('Command execution error:', error);
+        output.error = `Error executing ${commandName}: ${String(error)}`;
+        output.component = <Text color="red">{output.error}</Text>;
+      }
     } else {
       output.error = `Command not found: ${commandName}. Type "help" for available commands.`;
       output.component = <Text color="red">{output.error}</Text>;

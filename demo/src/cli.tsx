@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from 'ink';
-import { Command } from 'commander';
+import { createProgram } from './program';
 import { commands } from './commands';
 
 /**
@@ -8,33 +8,32 @@ import { commands } from './commands';
  * @param argv - Command line arguments (defaults to process.argv in Node.js)
  */
 export async function setupCLI(argv?: string[]) {
-  const program = new Command();
+  const program = createProgram();
 
-  program
-    .name('demo')
-    .description('Demo CLI application following devalbo-core principles')
-    .version('1.0.0');
-
-  // Greet command with Ink UI
-  program
-    .command('greet')
-    .description('Greet someone')
-    .argument('[name...]', 'Name to greet', [])
-    .option('-i, --interactive', 'Use interactive prompts')
-    .action(async (nameArgs: string[], options: { interactive?: boolean }) => {
-      // Use shared command handler with Ink-based prompts
+  // Add action handlers to commands
+  const greetCommand = program.commands.find(cmd => cmd.name() === 'greet');
+  if (greetCommand) {
+    greetCommand.action(async (nameArgs: string[], options: { interactive?: boolean }) => {
       const result = commands.greet(nameArgs, { interactive: options.interactive });
       render(result.component);
     });
+  }
 
-  // Info command with Ink UI
-  program
-    .command('info')
-    .description('Show information about this demo')
-    .action(() => {
+  const infoCommand = program.commands.find(cmd => cmd.name() === 'info');
+  if (infoCommand) {
+    infoCommand.action(() => {
       const result = commands.info();
       render(result.component);
     });
+  }
+
+  const helpCommand = program.commands.find(cmd => cmd.name() === 'help');
+  if (helpCommand) {
+    helpCommand.action(() => {
+      const result = commands.help();
+      render(result.component);
+    });
+  }
 
   // Parse arguments
   if (argv) {

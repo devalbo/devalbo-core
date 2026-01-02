@@ -2,6 +2,7 @@ import React from 'react';
 import { Spinner } from '../components/ui/spinner';
 import { Box, Text } from 'ink';
 import { PromptGreet } from '../components/PromptGreet';
+import { createProgram } from '../program';
 
 export interface CommandResult {
   component: React.ReactNode;
@@ -57,21 +58,29 @@ export const commands = {
   },
 
   help: (args?: string[], options?: CommandOptions): CommandResult => {
-    return {
-      component: (
-        <Box flexDirection="column">
-          <Text bold color="yellow">Available Commands:</Text>
-          <Text>  greet [name] [-i|--interactive]  - Greet someone (default: World)</Text>
-          <Text>  info                             - Show application info</Text>
-          <Text>  loading                          - Show loading spinner</Text>
-          <Text>  clear                            - Clear the terminal</Text>
-          <Text>  help                             - Show this help message</Text>
-          <Box marginTop={1}>
-            <Text dimColor>Use -i or --interactive with greet for interactive prompts</Text>
+    try {
+      // Use Commander's built-in help generation
+      const program = createProgram();
+      const helpText = program.helpInformation();
+
+      return {
+        component: (
+          <Box flexDirection="column">
+            <Text>{helpText}</Text>
           </Box>
-        </Box>
-      )
-    };
+        )
+      };
+    } catch (error) {
+      console.error('Help command error:', error);
+      return {
+        component: (
+          <Box flexDirection="column">
+            <Text color="red">Error generating help: {String(error)}</Text>
+          </Box>
+        ),
+        error: String(error)
+      };
+    }
   }
 };
 

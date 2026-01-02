@@ -231,7 +231,7 @@ export default defineConfig({
 
 #### Install Behavior Testing Framework
 
-TODO: setup installing cucumber testing
+TODO: setup installing cucumber and playwright. we should be able to write CLI tests that use the same gherkin scenarios, but different step files underneath for browser vs. terminal. 
 
 #### Configure test runners and outputs
 

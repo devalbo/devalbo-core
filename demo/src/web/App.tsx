@@ -6,10 +6,10 @@ export const App: React.FC = () => {
   return (
     <div style={{
       maxWidth: '1200px',
-      margin: '40px auto',
-      padding: '20px'
+      // margin: '40px auto',
+      // padding: '20px'
     }}>
-      <h1>Demo CLI - ink-web Interactive Terminal</h1>
+      {/* <h1>Demo CLI - ink-web Interactive Terminal</h1>
 
       <div style={{
         background: '#e3f2fd',
@@ -27,15 +27,17 @@ export const App: React.FC = () => {
         <p>
           <strong>Try:</strong> <code>greet Alice</code>, <code>info</code>, <code>help</code>
         </p>
-      </div>
+      </div> */}
 
-      <div style={{
-        border: '2px solid #333',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        background: '#1e1e1e',
-        maxWidth: '900px'
-      }}>
+      <div
+        id="cli-terminal"
+        style={{
+          border: '2px solid #333',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          background: '#1e1e1e',
+          maxWidth: '900px'
+        }}>
         <InkTerminalBox rows={25} focus>
           <InteractiveShell />
         </InkTerminalBox>
