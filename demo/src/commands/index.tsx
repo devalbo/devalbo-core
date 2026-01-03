@@ -26,6 +26,17 @@ export const commands = {
       };
     }
 
+    // Detect environment:
+    // - Browser (no process): check if interactive flag explicitly false
+    // - Terminal (has process): check TTY for interactivity
+    const isBrowser = typeof process === 'undefined';
+    const isTerminalTTY = !isBrowser && process.stdin?.isTTY;
+
+    // Browser console explicitly non-interactive (unless interactive=true)
+    const shouldPrompt = isBrowser
+      ? false  // Browser console: never auto-prompt
+      : isTerminalTTY;  // Terminal: prompt if TTY
+
     // Use Effect validation to auto-prompt for missing arguments
     return withValidation(
       validateGreetArgs(args),
@@ -35,12 +46,9 @@ export const commands = {
           <Text color="green">Hello, {name}!</Text>
         </Box>
       ),
-      // On missing argument: check if we can use interactive prompt
+      // On missing argument: prompt or use default based on environment
       (error) => {
-        // In non-TTY environments (like tests), use default value directly
-        const isTTY = typeof process !== 'undefined' && process.stdin && process.stdin.isTTY;
-        
-        if (!isTTY && error.defaultValue) {
+        if (!shouldPrompt && error.defaultValue) {
           // Non-interactive: use default value
           return (
             <Box flexDirection="column" padding={1}>
@@ -48,8 +56,8 @@ export const commands = {
             </Box>
           );
         }
-        
-        // Interactive TTY: show prompt
+
+        // Interactive: show prompt
         return (
           <PromptGreet
             initialName={error.defaultValue}

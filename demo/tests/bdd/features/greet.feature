@@ -3,7 +3,11 @@ Feature: Greet Command
   I want to greet people by name
   So that I can see personalized greeting messages
 
-  Scenario: Greet with default name
+  # Note: Terminal CLI auto-prompts for missing arguments in TTY mode
+  # These automated tests run in non-TTY mode, so defaults are used
+  # For interactive testing, run: node dist/cli.js greet
+
+  Scenario: Greet with default name (non-interactive)
     When I run the greet command without arguments
     Then I should see "Hello, World!"
 

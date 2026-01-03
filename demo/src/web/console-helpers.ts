@@ -65,9 +65,9 @@ export const cli = {
   // Helper to execute and display
   exec,
 
-  // Convenience methods
-  greet: (name?: string, interactive = false) => {
-    return exec('greet', name ? [name] : [], { interactive });
+  // Convenience methods (non-interactive by default for console)
+  greet: (name?: string) => {
+    return exec('greet', name ? [name] : []);
   },
 
   info: () => exec('info'),

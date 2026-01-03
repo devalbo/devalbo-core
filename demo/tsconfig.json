@@ -19,6 +19,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "scripts/**/*", "test-steps/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+  "include": ["src/**/*", "scripts/**/*", "test-steps/**/*", "tests/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
