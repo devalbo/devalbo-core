@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Box, Text } from 'ink';
 import { TextInput } from '../components/ui/text-input';
-import { commands, CommandName, CommandOptions } from '../commands';
+import { commands, CommandName } from '../commands';
+import { BrowserShellProvider } from './BrowserShellProvider';
+import { useShell } from './ShellContext';
 
 interface CommandOutput {
   command: string;
@@ -10,9 +12,9 @@ interface CommandOutput {
   error?: string;
 }
 
-export const InteractiveShell: React.FC = () => {
+function ShellContent() {
+  const { isCommandRunning } = useShell();
   const [input, setInput] = useState('');
-  const [isInteractive, setIsInteractive] = useState(false);
   const [history, setHistory] = useState<CommandOutput[]>([
     {
       command: 'Welcome to Demo CLI (ink-web)',
@@ -21,26 +23,16 @@ export const InteractiveShell: React.FC = () => {
     }
   ]);
 
-  const handleInteractiveComplete = () => {
-    setIsInteractive(false);
-  };
-
   const executeCommand = (cmd: string) => {
     const trimmedCmd = cmd.trim();
     const parts = trimmedCmd.split(' ');
     const commandName = parts[0];
 
-    // Parse args and flags
+    // Parse args (skip flags for now)
     const args: string[] = [];
-    const options: CommandOptions = {};
-
     for (let i = 1; i < parts.length; i++) {
       const part = parts[i];
-      if (part === '-i' || part === '--interactive') {
-        options.interactive = true;
-      } else if (part.startsWith('-')) {
-        // Skip other flags for now
-      } else {
+      if (!part.startsWith('-')) {
         args.push(part);
       }
     }
@@ -69,13 +61,7 @@ export const InteractiveShell: React.FC = () => {
     const command = commands[commandName.toLowerCase() as CommandName];
     if (command) {
       try {
-        // If this is an interactive command, set the flag and pass completion callback
-        if (options.interactive) {
-          setIsInteractive(true);
-          options.onComplete = handleInteractiveComplete;
-        }
-
-        const result = command(args, options);
+        const result = command(args);
         output.component = result.component;
         output.error = result.error;
       } catch (error) {
@@ -109,7 +95,7 @@ export const InteractiveShell: React.FC = () => {
         ))}
       </Box>
 
-      {!isInteractive && (
+      {!isCommandRunning && (
         <Box>
           <Text color="green">$ </Text>
           <TextInput
@@ -121,5 +107,13 @@ export const InteractiveShell: React.FC = () => {
         </Box>
       )}
     </Box>
+  );
+}
+
+export const InteractiveShell: React.FC = () => {
+  return (
+    <BrowserShellProvider>
+      <ShellContent />
+    </BrowserShellProvider>
   );
 };

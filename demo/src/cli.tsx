@@ -2,6 +2,7 @@ import React from 'react';
 import { render } from 'ink';
 import { createProgram } from './program';
 import { commands } from './commands';
+import { TerminalShellProvider } from './components/TerminalShellProvider';
 
 /**
  * CLI setup function that uses Ink for terminal UI
@@ -24,6 +25,20 @@ export async function setupCLI(argv?: string[]) {
     infoCommand.action(() => {
       const result = commands.info();
       render(result.component);
+    });
+  }
+
+  const countdownCommand = program.commands.find(cmd => cmd.name() === 'countdown');
+  if (countdownCommand) {
+    countdownCommand.action(async () => {
+      const result = commands.countdown();
+      // Wrap in TerminalShellProvider so Countdown can use the shell context
+      const instance = render(
+        <TerminalShellProvider>
+          {result.component}
+        </TerminalShellProvider>
+      );
+      await instance.waitUntilExit();
     });
   }
 

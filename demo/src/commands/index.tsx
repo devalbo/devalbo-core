@@ -2,6 +2,7 @@ import React from 'react';
 import { Spinner } from '../components/ui/spinner';
 import { Box, Text } from 'ink';
 import { PromptGreet } from '../components/PromptGreet';
+import { Countdown } from '../components/Countdown';
 import { createProgram } from '../program';
 import { withValidation } from './with-validation';
 import { validateGreetArgs } from '../lib/validate-args';
@@ -88,6 +89,12 @@ export const commands = {
   loading: (args?: string[], options?: CommandOptions): CommandResult => {
     return {
       component: <Spinner type="dots" />
+    };
+  },
+
+  countdown: (args?: string[], options?: CommandOptions): CommandResult => {
+    return {
+      component: <Countdown seconds={5} />
     };
   },
 

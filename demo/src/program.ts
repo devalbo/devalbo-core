@@ -24,6 +24,10 @@ export function createProgram() {
     .description('Show information about this demo');
 
   program
+    .command('countdown')
+    .description('Run a 5 second countdown');
+
+  program
     .command('help')
     .description('Display help for command');
 

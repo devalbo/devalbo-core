@@ -265,6 +265,18 @@ node dist/cli.js info
 demo.info()
 ```
 
+### countdown
+
+Run a 5 second countdown timer.
+
+```bash
+# Terminal
+node dist/cli.js countdown
+
+# Browser console
+demo.countdown()
+```
+
 ## devalbo-core Principles
 
 This demo implements the following principles:
