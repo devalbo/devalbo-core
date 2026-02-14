@@ -1,0 +1,25 @@
+{
+  "name": "@devalbo/shared",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "type-check": "tsc -p tsconfig.json --noEmit",
+    "test": "echo 'no tests'"
+  },
+  "dependencies": {
+    "effect": "^3.19.14",
+    "zod": "^4.3.4"
+  },
+  "peerDependencies": {
+    "react": "^19.2.3"
+  }
+}
