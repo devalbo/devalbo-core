@@ -30,6 +30,7 @@ export const useFileTree = ({ rootPath }: UseFileTreeOptions): UseFileTreeReturn
       const rows = await driver.readdir(asDirectoryPath(rootPath));
       const sorted = [...rows].sort((a, b) => Number(b.isDirectory) - Number(a.isDirectory) || a.name.localeCompare(b.name));
       setEntries(sorted);
+      setSelectedPath((prev) => prev ?? sorted[0]?.path ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {

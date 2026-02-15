@@ -12,13 +12,13 @@ function extractText(node: ReactNode): string {
   return '';
 }
 
-function exec(commandName: string, args: string[] = []) {
+async function exec(commandName: string, args: string[] = [], cwd = '/') {
   const command = commands[commandName as CommandName];
   if (!command) {
     throw new Error(`Command not found: ${commandName}`);
   }
 
-  const result = command(args);
+  const result = await command(args, { cwd });
   const text = extractText(result.component);
   if (text) {
     console.log(`\n${text}\n`);
@@ -27,9 +27,29 @@ function exec(commandName: string, args: string[] = []) {
   return result;
 }
 
+async function execText(commandName: string, args: string[] = [], cwd = '/') {
+  const result = await exec(commandName, args, cwd);
+  return {
+    text: extractText(result.component),
+    error: result.error ?? null
+  };
+}
+
 export const cli = {
   exec,
-  navigate: (path = '.') => exec('navigate', [path]),
-  edit: (file: string) => exec('edit', [file]),
-  help: () => exec('help')
+  execText,
+  pwd: () => exec('pwd'),
+  cd: (target: string) => exec('cd', [target]),
+  ls: (target = '.') => exec('ls', [target]),
+  tree: (target = '.') => exec('tree', [target]),
+  stat: (target: string) => exec('stat', [target]),
+  clear: () => exec('clear'),
+  cat: (target: string) => exec('cat', [target]),
+  touch: (target: string) => exec('touch', [target]),
+  mkdir: (target: string) => exec('mkdir', [target]),
+  cp: (source: string, dest: string) => exec('cp', [source, dest]),
+  mv: (source: string, dest: string) => exec('mv', [source, dest]),
+  rm: (target: string) => exec('rm', [target]),
+  help: () => exec('help'),
+  helpText: async () => (await execText('help')).text
 };

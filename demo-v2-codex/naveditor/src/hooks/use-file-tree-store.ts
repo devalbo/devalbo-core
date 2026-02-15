@@ -1,8 +1,15 @@
 import { useEffect, useMemo } from 'react';
 import { createDevalboStore, FILE_TREE_TABLE } from '@devalbo/state';
 import { useFileTree } from './use-file-tree';
+import type { DevalboStore } from '@devalbo/state';
+import type { UseFileTreeReturn } from './use-file-tree';
 
-export const useFileTreeStore = (rootPath: string) => {
+export interface UseFileTreeStoreResult {
+  store: DevalboStore;
+  tree: UseFileTreeReturn;
+}
+
+export const useFileTreeStore = (rootPath: string): UseFileTreeStoreResult => {
   const store = useMemo(() => createDevalboStore(), []);
   const tree = useFileTree({ rootPath });
 

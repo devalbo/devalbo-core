@@ -8,10 +8,16 @@ interface Props {
 }
 
 export const FileTreeItem: React.FC<Props> = ({ entry, selected }) => {
-  const icon = entry.isDirectory ? '[D]' : '[F]';
+  const fileIcon = (() => {
+    if (entry.isDirectory) return '[DIR]';
+    if (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx')) return '[TS]';
+    if (entry.name.endsWith('.json')) return '[JSON]';
+    if (entry.name.endsWith('.md')) return '[MD]';
+    return '[FILE]';
+  })();
   return (
-    <Text color={selected ? 'green' : undefined}>
-      {icon} {entry.name}
+    <Text {...(selected ? { color: 'green' as const } : {})}>
+      {selected ? '>' : ' '} {fileIcon} {entry.name}
     </Text>
   );
 };
