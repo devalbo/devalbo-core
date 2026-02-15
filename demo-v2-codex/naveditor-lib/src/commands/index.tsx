@@ -18,6 +18,20 @@ import {
   exportDirectoryAsBft,
   treeText
 } from '@/lib/filesystem-actions';
+import {
+  parseCatArgs,
+  parseCdArgs,
+  parseCpArgs,
+  parseExportArgs,
+  parseImportArgs,
+  parseLsArgs,
+  parseMkdirArgs,
+  parseMvArgs,
+  parseRmArgs,
+  parseStatArgs,
+  parseTouchArgs,
+  parseTreeArgs
+} from '@/lib/command-args.parser';
 import { getFilesystemBackendInfo } from '@/lib/file-operations';
 
 type ExtendedCommandOptions = CommandOptions & {
@@ -73,6 +87,12 @@ const makeError = (message: string): CommandResult => ({
 const defaultImportLocationFromFileName = (fileName: string): string => {
   const base = fileName.replace(/\.[^/.]+$/, '').trim();
   return base || 'imported';
+};
+
+const defaultImportLocationFromPath = (filePath: string): string => {
+  const normalized = filePath.replace(/\\/g, '/');
+  const fileName = normalized.split('/').filter(Boolean).at(-1) ?? filePath;
+  return defaultImportLocationFromFileName(fileName);
 };
 
 const defaultExportFileName = (sourcePath: string): string => {
@@ -136,45 +156,98 @@ const pickBftFileText = async (): Promise<{ name: string; text: string } | null>
   });
 };
 
+const promptTextInput = async (question: string): Promise<string | null> => {
+  if (typeof window !== 'undefined' && typeof window.prompt === 'function') {
+    const value = window.prompt(question);
+    if (value == null) return null;
+    const trimmed = value.trim();
+    return trimmed === '' ? null : trimmed;
+  }
+
+  const env = detectPlatform();
+  if (env.platform !== RuntimePlatform.NodeJS) return null;
+
+  const nodeProcess = (globalThis as {
+    process?: {
+      stdin?: { isTTY?: boolean };
+      stdout?: unknown;
+    };
+  }).process;
+
+  if (!nodeProcess?.stdin?.isTTY) return null;
+
+  try {
+    const readlineModuleId = 'node:readline/promises';
+    const readlineModule = await import(/* @vite-ignore */ readlineModuleId);
+    const processModule = (globalThis as {
+      process?: {
+        stdin: NodeJS.ReadStream;
+        stdout: NodeJS.WriteStream;
+      };
+    }).process;
+    if (!processModule) return null;
+    const rl = readlineModule.createInterface({
+      input: processModule.stdin,
+      output: processModule.stdout
+    });
+    try {
+      const answer = await rl.question(question);
+      const trimmed = answer.trim();
+      return trimmed === '' ? null : trimmed;
+    } finally {
+      rl.close();
+    }
+  } catch {
+    return null;
+  }
+};
+
 const baseCommands: Record<CoreCommandName, AsyncCommandHandler> = {
   pwd: async (_args, options) => {
     const cwd = options?.cwd ?? getDefaultCwd();
     return makeOutput(cwd);
   },
   cd: async (args, options) => {
-    const requested = args[0];
-    if (!requested) return makeError('Usage: cd <path>');
+    const parsed = parseCdArgs(args);
+    if (!parsed.success) return makeError(`Usage: cd <path>\n${parsed.error}`);
 
     try {
       const cwd = options?.cwd ?? getDefaultCwd();
-      const targetPath = await changeDir(cwd, requested);
+      const targetPath = await changeDir(cwd, parsed.value.path);
       options?.setCwd?.(targetPath);
       return makeOutput(targetPath);
     } catch (err) {
-      return makeError(String((err as Error).message ?? `Directory not found: ${requested}`));
+      return makeError(String((err as Error).message ?? `Directory not found: ${parsed.value.path}`));
     }
   },
   ls: async (args, options) => {
+    const parsed = parseLsArgs(args);
+    if (!parsed.success) return makeError(`Usage: ls [path]\n${parsed.error}`);
+    const requested = parsed.value.path ?? '.';
     try {
       const cwd = options?.cwd ?? getDefaultCwd();
-      const entries = await listDirectory(cwd, args[0] ?? '.');
+      const entries = await listDirectory(cwd, requested);
       const output = entries.length === 0 ? '(empty)' : entries.map((entry) => entry.isDirectory ? `${entry.name}/` : entry.name).join('\n');
       return makeOutput(output);
     } catch {
-      return makeError(`Cannot list directory: ${args[0] ?? '.'}`);
+      return makeError(`Cannot list directory: ${requested}`);
     }
   },
   tree: async (args, options) => {
+    const parsed = parseTreeArgs(args);
+    if (!parsed.success) return makeError(`Usage: tree [path]\n${parsed.error}`);
+    const requested = parsed.value.path ?? '.';
     try {
       const cwd = options?.cwd ?? getDefaultCwd();
-      return makeOutput(await treeText(cwd, args[0] ?? '.'));
+      return makeOutput(await treeText(cwd, requested));
     } catch {
-      return makeError(`Cannot read directory: ${args[0] ?? '.'}`);
+      return makeError(`Cannot read directory: ${requested}`);
     }
   },
   stat: async (args, options) => {
-    const requested = args[0];
-    if (!requested) return makeError('Usage: stat <path>');
+    const parsed = parseStatArgs(args);
+    if (!parsed.success) return makeError(`Usage: stat <path>\n${parsed.error}`);
+    const requested = parsed.value.path;
 
     try {
       const cwd = options?.cwd ?? getDefaultCwd();
@@ -197,8 +270,9 @@ const baseCommands: Record<CoreCommandName, AsyncCommandHandler> = {
     return makeOutput('');
   },
   cat: async (args, options) => {
-    const requested = args[0];
-    if (!requested) return makeError('Usage: cat <file>');
+    const parsed = parseCatArgs(args);
+    if (!parsed.success) return makeError(`Usage: cat <file>\n${parsed.error}`);
+    const requested = parsed.value.file;
 
     try {
       const cwd = options?.cwd ?? getDefaultCwd();
@@ -208,8 +282,9 @@ const baseCommands: Record<CoreCommandName, AsyncCommandHandler> = {
     }
   },
   touch: async (args, options) => {
-    const requested = args[0];
-    if (!requested) return makeError('Usage: touch <file>');
+    const parsed = parseTouchArgs(args);
+    if (!parsed.success) return makeError(`Usage: touch <file>\n${parsed.error}`);
+    const requested = parsed.value.file;
 
     try {
       const cwd = options?.cwd ?? getDefaultCwd();
@@ -219,8 +294,9 @@ const baseCommands: Record<CoreCommandName, AsyncCommandHandler> = {
     }
   },
   mkdir: async (args, options) => {
-    const requested = args[0];
-    if (!requested) return makeError('Usage: mkdir <path>');
+    const parsed = parseMkdirArgs(args);
+    if (!parsed.success) return makeError(`Usage: mkdir <path>\n${parsed.error}`);
+    const requested = parsed.value.path;
 
     try {
       const cwd = options?.cwd ?? getDefaultCwd();
@@ -230,34 +306,33 @@ const baseCommands: Record<CoreCommandName, AsyncCommandHandler> = {
     }
   },
   cp: async (args, options) => {
-    const source = args[0];
-    const dest = args[1];
-    if (!source || !dest) return makeError('Usage: cp <source> <dest>');
+    const parsed = parseCpArgs(args);
+    if (!parsed.success) return makeError(`Usage: cp <source> <dest>\n${parsed.error}`);
 
     try {
       const cwd = options?.cwd ?? getDefaultCwd();
-      const { sourcePath, destPath } = await copyPath(cwd, source, dest);
+      const { sourcePath, destPath } = await copyPath(cwd, parsed.value.source, parsed.value.dest);
       return makeOutput(`${sourcePath} -> ${destPath}`);
     } catch {
-      return makeError(`Cannot copy: ${source} -> ${dest}`);
+      return makeError(`Cannot copy: ${parsed.value.source} -> ${parsed.value.dest}`);
     }
   },
   mv: async (args, options) => {
-    const source = args[0];
-    const dest = args[1];
-    if (!source || !dest) return makeError('Usage: mv <source> <dest>');
+    const parsed = parseMvArgs(args);
+    if (!parsed.success) return makeError(`Usage: mv <source> <dest>\n${parsed.error}`);
 
     try {
       const cwd = options?.cwd ?? getDefaultCwd();
-      const { sourcePath, destPath } = await movePath(cwd, source, dest);
+      const { sourcePath, destPath } = await movePath(cwd, parsed.value.source, parsed.value.dest);
       return makeOutput(`${sourcePath} -> ${destPath}`);
     } catch {
-      return makeError(`Cannot move: ${source} -> ${dest}`);
+      return makeError(`Cannot move: ${parsed.value.source} -> ${parsed.value.dest}`);
     }
   },
   rm: async (args, options) => {
-    const requested = args[0];
-    if (!requested) return makeError('Usage: rm <path>');
+    const parsed = parseRmArgs(args);
+    if (!parsed.success) return makeError(`Usage: rm <path>\n${parsed.error}`);
+    const requested = parsed.value.path;
 
     try {
       const cwd = options?.cwd ?? getDefaultCwd();
@@ -274,8 +349,10 @@ const baseCommands: Record<CoreCommandName, AsyncCommandHandler> = {
     return makeOutput(lines.join('\n'));
   },
   export: async (args, options) => {
-    const sourcePath = args[0] ?? '.';
-    const outputPath = args[1];
+    const parsed = parseExportArgs(args);
+    if (!parsed.success) return makeError(`Usage: export [path] [output]\n${parsed.error}`);
+    const sourcePath = parsed.value.sourcePath ?? '.';
+    const outputPath = parsed.value.outputPath;
     try {
       const cwd = options?.cwd ?? getDefaultCwd();
       const platform = detectPlatform().platform;
@@ -297,29 +374,52 @@ const baseCommands: Record<CoreCommandName, AsyncCommandHandler> = {
     const cwd = options?.cwd ?? getDefaultCwd();
     const platform = detectPlatform().platform;
 
-    const bftFilePath = args[0];
-    const locationName = args[1];
+    const parsed = parseImportArgs(args);
+    if (!parsed.success) return makeError(`Usage: import [bft-file] [location]\n${parsed.error}`);
+    const firstArg = parsed.value.firstArg;
+    const secondArg = parsed.value.secondArg;
+    const isPickerRuntime = platform === RuntimePlatform.Browser || platform === RuntimePlatform.Tauri;
 
-    if (bftFilePath && locationName) {
+    if (firstArg && secondArg) {
       try {
-        const result = await importBftToLocation(cwd, bftFilePath, locationName);
+        const result = await importBftToLocation(cwd, firstArg, secondArg);
         return makeOutput(`Imported ${result.bftFilePath} -> ${result.targetPath}`);
       } catch (err) {
         return makeError(String((err as Error).message ?? 'Import failed'));
       }
     }
 
-    const isPickerRuntime = platform === RuntimePlatform.Browser || platform === RuntimePlatform.Tauri;
-    if (!isPickerRuntime) return makeError('Usage: import <bft-file> <location>');
+    if (isPickerRuntime) {
+      const requestedLocation = secondArg ?? firstArg;
+      try {
+        const picked = await pickBftFileText();
+        if (!picked) return makeError('Import canceled');
 
-    const requestedLocation = args[0];
+        const targetLocation = requestedLocation ?? defaultImportLocationFromFileName(picked.name);
+        const result = await importBftTextToLocation(cwd, picked.text, targetLocation);
+        return makeOutput(`Imported ${picked.name} -> ${result.targetPath}`);
+      } catch (err) {
+        return makeError(String((err as Error).message ?? 'Import failed'));
+      }
+    }
+
+    let bftFilePath = firstArg;
+    if (!bftFilePath) {
+      const promptedPath = await promptTextInput('BFT file path: ');
+      if (!promptedPath) return makeError('Usage: import [bft-file] [location]');
+      bftFilePath = promptedPath;
+    }
+
+    let locationName = secondArg;
+    if (!locationName) {
+      const suggested = defaultImportLocationFromPath(bftFilePath);
+      const entered = await promptTextInput(`Import location (default: ${suggested}): `);
+      locationName = entered ?? suggested;
+    }
+
     try {
-      const picked = await pickBftFileText();
-      if (!picked) return makeError('Import canceled');
-
-      const targetLocation = requestedLocation ?? defaultImportLocationFromFileName(picked.name);
-      const result = await importBftTextToLocation(cwd, picked.text, targetLocation);
-      return makeOutput(`Imported ${picked.name} -> ${result.targetPath}`);
+      const result = await importBftToLocation(cwd, bftFilePath, locationName);
+      return makeOutput(`Imported ${result.bftFilePath} -> ${result.targetPath}`);
     } catch (err) {
       return makeError(String((err as Error).message ?? 'Import failed'));
     }

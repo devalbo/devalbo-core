@@ -226,6 +226,9 @@ importers:
       '@devalbo/ui':
         specifier: workspace:*
         version: link:../packages/ui
+      '@optique/core':
+        specifier: ^0.10.0
+        version: 0.10.0
       '@sqlite.org/sqlite-wasm':
         specifier: 3.51.2-build6
         version: 3.51.2-build6
@@ -821,6 +824,10 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@optique/core@0.10.0':
+    resolution: {integrity: sha512-PdQUfZdMCUa3mD8DWeGCV3JrD7CAvdiUP9P7JyIbgCEtQznhJ6gBWff0WGq/LRv7QDvyYbIjIvAY159GLHZ4IQ==}
+    engines: {bun: '>=1.2.0', deno: '>=2.3.0', node: '>=20.0.0'}
 
   '@playwright/test@1.58.2':
     resolution: {integrity: sha512-akea+6bHYBBfA9uQqSYmlJXn61cTa+jbO87xVLCWbTqbWadRVmhxlXATaOjOgcBaWU4ePo0wB41KMFv3o35IXA==}
@@ -3007,6 +3014,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@optique/core@0.10.0': {}
 
   '@playwright/test@1.58.2':
     dependencies:

@@ -20,6 +20,7 @@ import {
   writeTextFile
 } from '@/lib/filesystem-actions';
 import { inferMimeTypeFromPath, mimePrefersText } from '@/lib/mime';
+import { PathTokenSchema } from '@/lib/command-args.schema';
 
 function TreeItem({
   node,
@@ -108,6 +109,15 @@ export const FileExplorer: React.FC = () => {
   const toFileContent = useCallback((bytes: Uint8Array, mimeType: string): FileContent => {
     if (mimePrefersText(mimeType)) return new TextDecoder().decode(bytes);
     return bytes;
+  }, []);
+
+  const validatePathToken = useCallback((value: string, context: string): string => {
+    const parsed = PathTokenSchema.safeParse(value);
+    if (!parsed.success) {
+      const message = parsed.error.issues.map((issue) => issue.message).join('; ');
+      throw new Error(`${context}: ${message}`);
+    }
+    return parsed.data;
   }, []);
 
   const refresh = useCallback(async () => {
@@ -226,20 +236,22 @@ export const FileExplorer: React.FC = () => {
   const createFile = useCallback(async () => {
     const trimmed = newFileName.trim();
     if (!trimmed) return;
-    const targetPath = await writeTextFile(currentDir, trimmed, '');
+    const validatedName = validatePathToken(trimmed, 'Invalid file name');
+    const targetPath = await writeTextFile(currentDir, validatedName, '');
     setNewFileName('');
     setActionStatus(`Created ${targetPath}`);
     await refresh();
-  }, [currentDir, newFileName, refresh, setActionStatus]);
+  }, [currentDir, newFileName, refresh, setActionStatus, validatePathToken]);
 
   const createFolder = useCallback(async () => {
     const folderName = window.prompt('Folder name');
     const trimmed = folderName?.trim();
     if (!trimmed) return;
-    const targetPath = await makeDirectory(currentDir, trimmed);
+    const validatedName = validatePathToken(trimmed, 'Invalid folder name');
+    const targetPath = await makeDirectory(currentDir, validatedName);
     setActionStatus(`Created ${targetPath}/`);
     await refresh();
-  }, [currentDir, refresh, setActionStatus]);
+  }, [currentDir, refresh, setActionStatus, validatePathToken]);
 
   const deleteSelected = useCallback(async () => {
     if (!selectedPath) return;
@@ -269,15 +281,16 @@ export const FileExplorer: React.FC = () => {
 
     try {
       for (const file of fileList) {
+        const validatedName = validatePathToken(file.name, 'Invalid upload file name');
         console.info('[FileExplorer] Upload file write begin', {
-          name: file.name,
+          name: validatedName,
           size: file.size,
           targetDir: currentDir
         });
         const bytes = new Uint8Array(await file.arrayBuffer());
-        await writeBytesFile(currentDir, file.name, bytes);
+        await writeBytesFile(currentDir, validatedName, bytes);
         console.info('[FileExplorer] Upload file write success', {
-          name: file.name,
+          name: validatedName,
           size: bytes.byteLength
         });
       }
@@ -315,7 +328,8 @@ export const FileExplorer: React.FC = () => {
 
     const first = fileList[0];
     if (first) {
-      const uploadedPath = resolveFsPath(currentDir, first.name);
+      const uploadedName = validatePathToken(first.name, 'Invalid upload file name');
+      const uploadedPath = resolveFsPath(currentDir, uploadedName);
       const uploadedMimeType = inferMimeTypeFromPath(uploadedPath);
       const uploadedBytes = await readBytesFile(getDefaultCwd(), uploadedPath);
       const uploadedContent = toFileContent(uploadedBytes, uploadedMimeType);
@@ -332,7 +346,7 @@ export const FileExplorer: React.FC = () => {
         size: uploadedBytes.byteLength
       });
     }
-  }, [backendLabel, currentDir, refresh, setActionStatus, toFileContent]);
+  }, [backendLabel, currentDir, refresh, setActionStatus, toFileContent, validatePathToken]);
 
   const selectedHandler = useMemo(() => {
     if (!selectedPath || selectedIsDir) return null;

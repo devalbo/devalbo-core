@@ -10,6 +10,7 @@ import {
   stringifyBft,
   type BftDirectoryNode
 } from './bft-transfer';
+import { PathTokenSchema } from './command-args.schema';
 
 export interface FsTreeNode {
   name: string;
@@ -41,6 +42,15 @@ const basename = (targetPath: string): string => pathOps().basename(targetPath);
 const toFilePath = (targetPath: string) => asFilePath(targetPath);
 const toDirectoryPath = (targetPath: string) => asDirectoryPath(targetPath);
 
+const validatePathArg = (value: string, label: string): string => {
+  const parsed = PathTokenSchema.safeParse(value);
+  if (!parsed.success) {
+    const message = parsed.error.issues.map((issue) => issue.message).join('; ');
+    throw new Error(`${label}: ${message}`);
+  }
+  return parsed.data;
+};
+
 const sortEntries = (entries: FileEntry[]): FileEntry[] =>
   entries.slice().sort((a, b) => {
     if (a.isDirectory !== b.isDirectory) return a.isDirectory ? -1 : 1;
@@ -48,7 +58,7 @@ const sortEntries = (entries: FileEntry[]): FileEntry[] =>
   });
 
 export const changeDir = async (cwd: string, requested: string): Promise<string> => {
-  const targetPath = resolveFsPath(cwd, requested);
+  const targetPath = resolveFsPath(cwd, validatePathArg(requested, 'Invalid directory path'));
   const driver = await getDriver();
   const entry = await driver.stat(toFilePath(targetPath));
   if (!entry.isDirectory) {
@@ -58,7 +68,7 @@ export const changeDir = async (cwd: string, requested: string): Promise<string>
 };
 
 export const listDirectory = async (cwd: string, requested = '.'): Promise<FileEntry[]> => {
-  const targetPath = resolveFsPath(cwd, requested);
+  const targetPath = resolveFsPath(cwd, validatePathArg(requested, 'Invalid directory path'));
   const driver = await getDriver();
   const entries = await driver.readdir(toDirectoryPath(targetPath));
   return sortEntries(entries);
@@ -70,7 +80,7 @@ export const readTextFile = async (cwd: string, requested: string): Promise<stri
 };
 
 export const readBytesFile = async (cwd: string, requested: string): Promise<Uint8Array> => {
-  const targetPath = resolveFsPath(cwd, requested);
+  const targetPath = resolveFsPath(cwd, validatePathArg(requested, 'Invalid file path'));
   const driver = await getDriver();
   const entry = await driver.stat(toFilePath(targetPath));
   if (entry.isDirectory) {
@@ -80,21 +90,21 @@ export const readBytesFile = async (cwd: string, requested: string): Promise<Uin
 };
 
 export const writeTextFile = async (cwd: string, requested: string, content: string): Promise<string> => {
-  const targetPath = resolveFsPath(cwd, requested);
+  const targetPath = resolveFsPath(cwd, validatePathArg(requested, 'Invalid file path'));
   const driver = await getDriver();
   await driver.writeFile(toFilePath(targetPath), new TextEncoder().encode(content));
   return targetPath;
 };
 
 export const writeBytesFile = async (cwd: string, requested: string, data: Uint8Array): Promise<string> => {
-  const targetPath = resolveFsPath(cwd, requested);
+  const targetPath = resolveFsPath(cwd, validatePathArg(requested, 'Invalid file path'));
   const driver = await getDriver();
   await driver.writeFile(toFilePath(targetPath), data);
   return targetPath;
 };
 
 export const touchFile = async (cwd: string, requested: string): Promise<string> => {
-  const targetPath = resolveFsPath(cwd, requested);
+  const targetPath = resolveFsPath(cwd, validatePathArg(requested, 'Invalid file path'));
   const driver = await getDriver();
   const exists = await driver.exists(toFilePath(targetPath));
   if (exists) {
@@ -108,7 +118,7 @@ export const touchFile = async (cwd: string, requested: string): Promise<string>
 };
 
 export const makeDirectory = async (cwd: string, requested: string): Promise<string> => {
-  const targetPath = resolveFsPath(cwd, requested);
+  const targetPath = resolveFsPath(cwd, validatePathArg(requested, 'Invalid directory path'));
   const driver = await getDriver();
   await driver.mkdir(toDirectoryPath(targetPath));
   return targetPath;
@@ -143,35 +153,35 @@ const copyRecursiveAbsolute = async (sourcePath: string, destPath: string): Prom
 };
 
 export const removePath = async (cwd: string, requested: string): Promise<string> => {
-  const targetPath = resolveFsPath(cwd, requested);
+  const targetPath = resolveFsPath(cwd, validatePathArg(requested, 'Invalid path'));
   await removeRecursiveAbsolute(targetPath);
   return targetPath;
 };
 
 export const copyPath = async (cwd: string, source: string, dest: string): Promise<{ sourcePath: string; destPath: string }> => {
-  const sourcePath = resolveFsPath(cwd, source);
-  const destPath = resolveFsPath(cwd, dest);
+  const sourcePath = resolveFsPath(cwd, validatePathArg(source, 'Invalid source path'));
+  const destPath = resolveFsPath(cwd, validatePathArg(dest, 'Invalid destination path'));
   await copyRecursiveAbsolute(sourcePath, destPath);
   return { sourcePath, destPath };
 };
 
 export const movePath = async (cwd: string, source: string, dest: string): Promise<{ sourcePath: string; destPath: string }> => {
-  const sourcePath = resolveFsPath(cwd, source);
-  const destPath = resolveFsPath(cwd, dest);
+  const sourcePath = resolveFsPath(cwd, validatePathArg(source, 'Invalid source path'));
+  const destPath = resolveFsPath(cwd, validatePathArg(dest, 'Invalid destination path'));
   await copyRecursiveAbsolute(sourcePath, destPath);
   await removeRecursiveAbsolute(sourcePath);
   return { sourcePath, destPath };
 };
 
 export const statPath = async (cwd: string, requested: string): Promise<{ path: string; entry: FileEntry }> => {
-  const targetPath = resolveFsPath(cwd, requested);
+  const targetPath = resolveFsPath(cwd, validatePathArg(requested, 'Invalid path'));
   const driver = await getDriver();
   const entry = await driver.stat(toFilePath(targetPath));
   return { path: targetPath, entry };
 };
 
 export const buildTree = async (cwd: string, requested = '.'): Promise<FsTreeNode> => {
-  const rootPath = resolveFsPath(cwd, requested);
+  const rootPath = resolveFsPath(cwd, validatePathArg(requested, 'Invalid directory path'));
   const driver = await getDriver();
 
   const root = await driver.stat(toFilePath(rootPath));
@@ -263,7 +273,7 @@ export const exportDirectoryAsBft = async (
   sourcePath = '.',
   outputPath?: string
 ): Promise<{ sourcePath: string; outputPath?: string; json: string }> => {
-  const absoluteSourcePath = resolveFsPath(cwd, sourcePath);
+  const absoluteSourcePath = resolveFsPath(cwd, validatePathArg(sourcePath, 'Invalid source directory path'));
   const driver = await getDriver();
   const entry = await driver.stat(toFilePath(absoluteSourcePath));
   if (!entry.isDirectory) {
@@ -280,7 +290,7 @@ export const exportDirectoryAsBft = async (
     };
   }
 
-  const absoluteOutputPath = resolveFsPath(cwd, outputPath);
+  const absoluteOutputPath = resolveFsPath(cwd, validatePathArg(outputPath, 'Invalid output file path'));
   await driver.writeFile(toFilePath(absoluteOutputPath), new TextEncoder().encode(json));
   return {
     sourcePath: absoluteSourcePath,
@@ -294,7 +304,7 @@ export const importBftToLocation = async (
   bftFilePath: string,
   locationName: string
 ): Promise<{ bftFilePath: string; targetPath: string }> => {
-  const absoluteBftPath = resolveFsPath(cwd, bftFilePath);
+  const absoluteBftPath = resolveFsPath(cwd, validatePathArg(bftFilePath, 'Invalid import file path'));
   const driver = await getDriver();
 
   const bftEntry = await driver.stat(toFilePath(absoluteBftPath));
@@ -316,7 +326,7 @@ export const importBftTextToLocation = async (
   bftText: string,
   locationName: string
 ): Promise<{ targetPath: string }> => {
-  const absoluteTargetPath = resolveFsPath(cwd, locationName);
+  const absoluteTargetPath = resolveFsPath(cwd, validatePathArg(locationName, 'Invalid import target path'));
   const driver = await getDriver();
 
   const exists = await driver.exists(toFilePath(absoluteTargetPath));
