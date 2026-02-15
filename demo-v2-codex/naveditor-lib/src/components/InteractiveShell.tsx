@@ -22,7 +22,7 @@ function ShellContent({ runtime }: { runtime: 'browser' | 'terminal' }) {
   const [history, setHistory] = useState<CommandOutput[]>([
     {
       command: 'Welcome to naveditor',
-      component: <Text color="cyan">Try: pwd, ls, cat README.md, mkdir demo, backend</Text>
+      component: <Text color="cyan">Try: pwd, ls, export ., import snapshot.bft restore, backend</Text>
     }
   ]);
 

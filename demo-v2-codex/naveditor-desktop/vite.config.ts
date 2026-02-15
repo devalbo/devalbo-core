@@ -3,13 +3,25 @@ import react from '@vitejs/plugin-react';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { resolve } from 'node:path';
 
+const tauriDevHost = process.env.TAURI_DEV_HOST;
+
 export default defineConfig({
   plugins: [react(), nodePolyfills()],
   clearScreen: false,
   server: {
-    host: '127.0.0.1',
+    host: tauriDevHost || '127.0.0.1',
     port: 1420,
     strictPort: true,
+    hmr: tauriDevHost
+      ? {
+        protocol: 'ws',
+        host: tauriDevHost,
+        port: 1421
+      }
+      : undefined,
+    watch: {
+      ignored: ['**/src-tauri/**']
+    },
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Embedder-Policy': 'require-corp'

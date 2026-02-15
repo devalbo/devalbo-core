@@ -51,6 +51,9 @@ export const cli = {
   mv: (source: string, dest: string) => exec('mv', [source, dest]),
   rm: (target: string) => exec('rm', [target]),
   backend: () => exec('backend'),
+  export: (target = '.', output?: string) => exec('export', output ? [target, output] : [target]),
+  import: (locationOrBftFile?: string, location?: string) =>
+    exec('import', location ? [locationOrBftFile ?? '', location] : locationOrBftFile ? [locationOrBftFile] : []),
   exit: () => exec('exit'),
   help: () => exec('help'),
   helpText: async () => (await execText('help')).text

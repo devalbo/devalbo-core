@@ -1,11 +1,13 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import type { CommandOptions, CommandResult } from '@devalbo/shared';
+import { detectPlatform, RuntimePlatform, type CommandOptions, type CommandResult } from '@devalbo/shared';
 import { createProgram } from '@/program';
 import {
   changeDir,
   copyPath,
   getDefaultCwd,
+  importBftTextToLocation,
+  importBftToLocation,
   listDirectory,
   makeDirectory,
   movePath,
@@ -13,6 +15,7 @@ import {
   removePath,
   statPath,
   touchFile,
+  exportDirectoryAsBft,
   treeText
 } from '@/lib/filesystem-actions';
 import { getFilesystemBackendInfo } from '@/lib/file-operations';
@@ -40,6 +43,8 @@ type CoreCommandName =
   | 'mv'
   | 'rm'
   | 'backend'
+  | 'export'
+  | 'import'
   | 'exit'
   | 'help';
 
@@ -64,6 +69,72 @@ const makeError = (message: string): CommandResult => ({
   ),
   error: message
 });
+
+const defaultImportLocationFromFileName = (fileName: string): string => {
+  const base = fileName.replace(/\.[^/.]+$/, '').trim();
+  return base || 'imported';
+};
+
+const defaultExportFileName = (sourcePath: string): string => {
+  const cleaned = sourcePath.trim().replace(/[/\\]+/g, '-').replace(/^-+|-+$/g, '');
+  const base = cleaned === '' || cleaned === '.' ? 'fileroot' : cleaned;
+  return `${base}.bft.json`;
+};
+
+const downloadTextFile = (fileName: string, text: string): void => {
+  if (typeof document === 'undefined' || typeof URL === 'undefined') {
+    throw new Error('Download is unavailable in this runtime');
+  }
+
+  const blob = new Blob([text], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
+const pickBftFileText = async (): Promise<{ name: string; text: string } | null> => {
+  if (typeof document === 'undefined') {
+    throw new Error('File picker is unavailable in this runtime');
+  }
+
+  return new Promise((resolve, reject) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.bft,.json,application/json';
+    input.style.display = 'none';
+
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      input.remove();
+
+      if (!file) {
+        resolve(null);
+        return;
+      }
+
+      try {
+        const text = await file.text();
+        resolve({ name: file.name, text });
+      } catch (err) {
+        reject(err);
+      }
+    };
+
+    input.oncancel = () => {
+      input.remove();
+      resolve(null);
+    };
+
+    document.body.appendChild(input);
+    input.click();
+  });
+};
 
 const baseCommands: Record<CoreCommandName, AsyncCommandHandler> = {
   pwd: async (_args, options) => {
@@ -201,6 +272,57 @@ const baseCommands: Record<CoreCommandName, AsyncCommandHandler> = {
     if (info.persistence) lines.push(`Persistence: ${info.persistence}`);
     if (info.baseDir) lines.push(`Base directory: ${info.baseDir}`);
     return makeOutput(lines.join('\n'));
+  },
+  export: async (args, options) => {
+    const sourcePath = args[0] ?? '.';
+    const outputPath = args[1];
+    try {
+      const cwd = options?.cwd ?? getDefaultCwd();
+      const platform = detectPlatform().platform;
+      const result = await exportDirectoryAsBft(cwd, sourcePath, outputPath);
+      if (!result.outputPath) {
+        if (platform === RuntimePlatform.Browser) {
+          const fileName = defaultExportFileName(sourcePath);
+          downloadTextFile(fileName, result.json);
+          return makeOutput(`Downloaded ${fileName}`);
+        }
+        return makeOutput(result.json);
+      }
+      return makeOutput(`Exported ${result.sourcePath} -> ${result.outputPath}`);
+    } catch (err) {
+      return makeError(String((err as Error).message ?? 'Export failed'));
+    }
+  },
+  import: async (args, options) => {
+    const cwd = options?.cwd ?? getDefaultCwd();
+    const platform = detectPlatform().platform;
+
+    const bftFilePath = args[0];
+    const locationName = args[1];
+
+    if (bftFilePath && locationName) {
+      try {
+        const result = await importBftToLocation(cwd, bftFilePath, locationName);
+        return makeOutput(`Imported ${result.bftFilePath} -> ${result.targetPath}`);
+      } catch (err) {
+        return makeError(String((err as Error).message ?? 'Import failed'));
+      }
+    }
+
+    const isPickerRuntime = platform === RuntimePlatform.Browser || platform === RuntimePlatform.Tauri;
+    if (!isPickerRuntime) return makeError('Usage: import <bft-file> <location>');
+
+    const requestedLocation = args[0];
+    try {
+      const picked = await pickBftFileText();
+      if (!picked) return makeError('Import canceled');
+
+      const targetLocation = requestedLocation ?? defaultImportLocationFromFileName(picked.name);
+      const result = await importBftTextToLocation(cwd, picked.text, targetLocation);
+      return makeOutput(`Imported ${picked.name} -> ${result.targetPath}`);
+    } catch (err) {
+      return makeError(String((err as Error).message ?? 'Import failed'));
+    }
   },
   exit: async (_args, options) => {
     if (!options?.exit) return makeError('exit is only available in terminal interactive mode');

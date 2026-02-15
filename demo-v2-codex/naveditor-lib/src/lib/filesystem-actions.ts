@@ -2,6 +2,14 @@ import path from 'path';
 import type { FileEntry } from '@devalbo/shared';
 import { asDirectoryPath, asFilePath, detectPlatform, RuntimePlatform } from '@devalbo/shared';
 import { getDriver } from './file-operations';
+import {
+  bftNodeToBytes,
+  bytesToBftNode,
+  parseBftJson,
+  sortedEntries,
+  stringifyBft,
+  type BftDirectoryNode
+} from './bft-transfer';
 
 export interface FsTreeNode {
   name: string;
@@ -209,4 +217,113 @@ export const treeText = async (cwd: string, requested = '.'): Promise<string> =>
 
   walk(tree, '');
   return lines.join('\n');
+};
+
+const encodeDirectoryAbsolute = async (dirPath: string): Promise<BftDirectoryNode> => {
+  const driver = await getDriver();
+  const entries = sortEntries(await driver.readdir(toDirectoryPath(dirPath)));
+  const encodedEntries: Record<string, import('./bft-transfer').BftNode> = {};
+
+  for (const entry of entries) {
+    const entryPath = joinFsPath(dirPath, entry.name);
+    if (entry.isDirectory) {
+      encodedEntries[entry.name] = await encodeDirectoryAbsolute(entryPath);
+      continue;
+    }
+    const bytes = await driver.readFile(toFilePath(entryPath));
+    encodedEntries[entry.name] = bytesToBftNode(bytes);
+  }
+
+  return {
+    type: 'directory',
+    entries: encodedEntries
+  };
+};
+
+const decodeDirectoryAbsolute = async (node: BftDirectoryNode, destPath: string): Promise<void> => {
+  const driver = await getDriver();
+  await driver.mkdir(toDirectoryPath(destPath));
+
+  for (const [name, child] of sortedEntries(node.entries)) {
+    const childPath = joinFsPath(destPath, name);
+    if (child.type === 'directory') {
+      await decodeDirectoryAbsolute(child, childPath);
+      continue;
+    }
+    await driver.writeFile(toFilePath(childPath), bftNodeToBytes(child));
+  }
+};
+
+export const exportDirectoryAsBft = async (
+  cwd: string,
+  sourcePath = '.',
+  outputPath?: string
+): Promise<{ sourcePath: string; outputPath?: string; json: string }> => {
+  const absoluteSourcePath = resolveFsPath(cwd, sourcePath);
+  const driver = await getDriver();
+  const entry = await driver.stat(toFilePath(absoluteSourcePath));
+  if (!entry.isDirectory) {
+    throw new Error(`Not a directory: ${sourcePath}`);
+  }
+
+  const payload = await encodeDirectoryAbsolute(absoluteSourcePath);
+  const json = stringifyBft(payload);
+
+  if (!outputPath) {
+    return {
+      sourcePath: absoluteSourcePath,
+      json
+    };
+  }
+
+  const absoluteOutputPath = resolveFsPath(cwd, outputPath);
+  await driver.writeFile(toFilePath(absoluteOutputPath), new TextEncoder().encode(json));
+  return {
+    sourcePath: absoluteSourcePath,
+    outputPath: absoluteOutputPath,
+    json
+  };
+};
+
+export const importBftToLocation = async (
+  cwd: string,
+  bftFilePath: string,
+  locationName: string
+): Promise<{ bftFilePath: string; targetPath: string }> => {
+  const absoluteBftPath = resolveFsPath(cwd, bftFilePath);
+  const driver = await getDriver();
+
+  const bftEntry = await driver.stat(toFilePath(absoluteBftPath));
+  if (bftEntry.isDirectory) {
+    throw new Error(`BFT input must be a file: ${bftFilePath}`);
+  }
+
+  const text = new TextDecoder().decode(await driver.readFile(toFilePath(absoluteBftPath)));
+  const result = await importBftTextToLocation(cwd, text, locationName);
+
+  return {
+    bftFilePath: absoluteBftPath,
+    targetPath: result.targetPath
+  };
+};
+
+export const importBftTextToLocation = async (
+  cwd: string,
+  bftText: string,
+  locationName: string
+): Promise<{ targetPath: string }> => {
+  const absoluteTargetPath = resolveFsPath(cwd, locationName);
+  const driver = await getDriver();
+
+  const exists = await driver.exists(toFilePath(absoluteTargetPath));
+  if (exists) {
+    throw new Error(`Target already exists: ${locationName}`);
+  }
+
+  const payload = parseBftJson(bftText);
+  await decodeDirectoryAbsolute(payload, absoluteTargetPath);
+
+  return {
+    targetPath: absoluteTargetPath
+  };
 };

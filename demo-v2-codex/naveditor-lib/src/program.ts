@@ -21,6 +21,12 @@ export function createProgram() {
   program.command('mv').description('Move or rename file or directory').argument('<source>', 'Source path').argument('<dest>', 'Destination path');
   program.command('rm').description('Remove file or directory').argument('<path>', 'Path to remove');
   program.command('backend').description('Show active filesystem backend');
+  program.command('export').description('Export a directory as BFT JSON').argument('[path]', 'Source directory path', '.').argument('[output]', 'Output .bft/.json file path');
+  program
+    .command('import')
+    .description('Import BFT JSON (browser/Tauri picks a file when no bftFile is provided)')
+    .argument('[bftFile]', 'BFT file path')
+    .argument('[location]', 'Target directory name/path');
   program.command('exit').description('Exit interactive terminal session');
   program.command('interactive').description('Start interactive terminal session');
 
