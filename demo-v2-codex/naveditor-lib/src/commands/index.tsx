@@ -15,6 +15,7 @@ import {
   touchFile,
   treeText
 } from '@/lib/filesystem-actions';
+import { getFilesystemBackendInfo } from '@/lib/file-operations';
 
 type ExtendedCommandOptions = CommandOptions & {
   cwd?: string;
@@ -37,6 +38,7 @@ type CoreCommandName =
   | 'cp'
   | 'mv'
   | 'rm'
+  | 'backend'
   | 'help';
 
 type AliasCommandName = 'navigate' | 'edit';
@@ -190,6 +192,13 @@ const baseCommands: Record<CoreCommandName, AsyncCommandHandler> = {
     } catch {
       return makeError(`Cannot remove: ${requested}`);
     }
+  },
+  backend: async () => {
+    const info = await getFilesystemBackendInfo();
+    const lines = [`Platform: ${info.platform}`, `Adapter: ${info.adapter}`];
+    if (info.persistence) lines.push(`Persistence: ${info.persistence}`);
+    if (info.baseDir) lines.push(`Base directory: ${info.baseDir}`);
+    return makeOutput(lines.join('\n'));
   },
   help: async () => {
     const program = createProgram();

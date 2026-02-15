@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import 'ink-web/css';
-import 'xterm/css/xterm.css';
+import '@xterm/xterm/css/xterm.css';
 import '@/index.css';
 import { App } from './App';
 import { cli } from './console-helpers';

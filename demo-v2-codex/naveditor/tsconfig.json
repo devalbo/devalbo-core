@@ -3,10 +3,10 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["../naveditor-lib/src/*"],
       "@devalbo/filesystem/node": ["../packages/filesystem/src/node.ts"]
     },
     "types": ["node"]
   },
-  "include": ["src/**/*", "tests/**/*"]
+  "include": ["tests/**/*"]
 }

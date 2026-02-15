@@ -7,11 +7,16 @@
     "build": "pnpm -r build",
     "type-check": "pnpm -r type-check",
     "test": "pnpm -r test",
-    "test:packages": "vitest run packages"
+    "test:packages": "vitest run packages",
+    "web:dev": "pnpm -C naveditor-web dev",
+    "web:build": "pnpm -C naveditor-web build",
+    "desktop:dev": "pnpm -C naveditor-desktop dev",
+    "desktop:build": "pnpm -C naveditor-desktop build"
   },
   "devDependencies": {
-    "@types/node": "^25.0.3",
-    "@types/react": "^19.2.7",
+    "@types/node": "^25.2.3",
+    "@types/react": "^19.2.14",
+    "ink": "^6.7.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }

@@ -13,7 +13,11 @@ export interface FsTreeNode {
 const isNode = () => detectPlatform().platform === RuntimePlatform.NodeJS;
 const pathOps = () => (isNode() ? path : path.posix);
 
-export const getDefaultCwd = (): string => (isNode() ? process.cwd() : '/');
+export const getDefaultCwd = (): string => {
+  if (!isNode()) return '/';
+  const nodeProcess = (globalThis as { process?: { cwd?: () => string } }).process;
+  return nodeProcess?.cwd?.() ?? '/';
+};
 
 export const joinFsPath = (left: string, right: string): string => pathOps().join(left, right);
 

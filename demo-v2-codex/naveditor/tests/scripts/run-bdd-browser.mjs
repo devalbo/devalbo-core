@@ -46,9 +46,9 @@ const ts = timestamp();
 const base = `tests/results/bdd/browser/${ts}`;
 const baseUrl = process.env.E2E_BASE_URL ?? 'http://127.0.0.1:4173';
 
-await run('pnpm', ['build:web']);
+await run('pnpm', ['-C', '../naveditor-web', 'build']);
 
-const preview = spawn('pnpm', ['vite', 'preview', '--host', '127.0.0.1', '--port', '4173', '--strictPort'], {
+const preview = spawn('pnpm', ['-C', '../naveditor-web', 'preview'], {
   stdio: 'inherit',
   env: process.env
 });

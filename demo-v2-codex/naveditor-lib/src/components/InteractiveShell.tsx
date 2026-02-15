@@ -13,13 +13,15 @@ interface CommandOutput {
 function ShellContent() {
   const [input, setInput] = useState('');
   const [inputKey, setInputKey] = useState(0);
-  const [cwd, setCwd] = useState(
-    detectPlatform().platform === RuntimePlatform.NodeJS ? process.cwd() : '/'
-  );
+  const [cwd, setCwd] = useState(() => {
+    if (detectPlatform().platform !== RuntimePlatform.NodeJS) return '/';
+    const nodeProcess = (globalThis as { process?: { cwd?: () => string } }).process;
+    return nodeProcess?.cwd?.() ?? '/';
+  });
   const [history, setHistory] = useState<CommandOutput[]>([
     {
       command: 'Welcome to naveditor',
-      component: <Text color="cyan">Try: pwd, ls, cat README.md, mkdir demo</Text>
+      component: <Text color="cyan">Try: pwd, ls, cat README.md, mkdir demo, backend</Text>
     }
   ]);
 

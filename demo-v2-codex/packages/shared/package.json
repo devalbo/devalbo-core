@@ -16,8 +16,8 @@
     "test": "echo 'no tests'"
   },
   "dependencies": {
-    "effect": "^3.19.14",
-    "zod": "^4.3.4"
+    "effect": "^3.19.17",
+    "zod": "^4.3.6"
   },
   "peerDependencies": {
     "react": "^19.2.3"

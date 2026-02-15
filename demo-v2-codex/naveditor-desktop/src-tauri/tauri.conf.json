@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "naveditor desktop",
+  "version": "0.1.0",
+  "identifier": "com.devalbo.naveditor.desktop",
+  "build": {
+    "beforeDevCommand": "pnpm dev:web",
+    "beforeBuildCommand": "pnpm build:web",
+    "devUrl": "http://127.0.0.1:1420",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "naveditor desktop",
+        "width": 1200,
+        "height": 820
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  }
+}

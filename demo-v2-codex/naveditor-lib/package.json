@@ -1,0 +1,33 @@
+{
+  "name": "@devalbo/naveditor-lib",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devalbo/commands": "workspace:*",
+    "@devalbo/filesystem": "workspace:*",
+    "@devalbo/shared": "workspace:*",
+    "@devalbo/state": "workspace:*",
+    "@devalbo/ui": "workspace:*",
+    "@sqlite.org/sqlite-wasm": "3.51.2-build6",
+    "@xterm/xterm": "^6.0.0",
+    "commander": "^14.0.3",
+    "effect": "^3.19.17",
+    "ink": "^6.7.0",
+    "ink-select-input": "^6.2.0",
+    "ink-web": "^0.1.11",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tinybase": "^7.3.4",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.3"
+  }
+}

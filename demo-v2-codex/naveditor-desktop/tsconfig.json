@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["../naveditor-lib/src/*"],
+      "@devalbo/filesystem": ["../packages/filesystem/src/index.ts"],
+      "@devalbo/commands": ["../packages/commands/src/index.ts"],
+      "@devalbo/shared": ["../packages/shared/src/index.ts"],
+      "@devalbo/state": ["../packages/state/src/index.ts"],
+      "@devalbo/ui": ["../packages/ui/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

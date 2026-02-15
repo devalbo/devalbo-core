@@ -9,11 +9,14 @@ importers:
   .:
     devDependencies:
       '@types/node':
-        specifier: ^25.0.3
+        specifier: ^25.2.3
         version: 25.2.3
       '@types/react':
-        specifier: ^19.2.7
+        specifier: ^19.2.14
         version: 19.2.14
+      ink:
+        specifier: ^6.7.0
+        version: 6.7.0(@types/react@19.2.14)(react@19.2.4)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -22,6 +25,191 @@ importers:
         version: 4.0.18(@types/node@25.2.3)(@vitest/ui@4.0.18)(tsx@4.21.0)(yaml@2.8.2)
 
   naveditor:
+    dependencies:
+      '@devalbo/commands':
+        specifier: workspace:*
+        version: link:../packages/commands
+      '@devalbo/filesystem':
+        specifier: workspace:*
+        version: link:../packages/filesystem
+      '@devalbo/naveditor-lib':
+        specifier: workspace:*
+        version: link:../naveditor-lib
+      '@devalbo/shared':
+        specifier: workspace:*
+        version: link:../packages/shared
+      '@devalbo/state':
+        specifier: workspace:*
+        version: link:../packages/state
+      '@devalbo/ui':
+        specifier: workspace:*
+        version: link:../packages/ui
+      '@sqlite.org/sqlite-wasm':
+        specifier: 3.51.2-build6
+        version: 3.51.2-build6
+      '@xterm/xterm':
+        specifier: ^6.0.0
+        version: 6.0.0
+      commander:
+        specifier: ^14.0.3
+        version: 14.0.3
+      effect:
+        specifier: ^3.19.17
+        version: 3.19.17
+      ink-select-input:
+        specifier: ^6.2.0
+        version: 6.2.0(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
+      ink-web:
+        specifier: ^0.1.11
+        version: 0.1.11(@xterm/xterm@6.0.0)(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react-reconciler@0.33.0(react@19.2.4))(react@19.2.4)(scheduler@0.27.0)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))(xterm@5.3.0)
+      react:
+        specifier: ^19.2.4
+        version: 19.2.4
+      react-dom:
+        specifier: ^19.2.4
+        version: 19.2.4(react@19.2.4)
+      tinybase:
+        specifier: ^7.3.4
+        version: 7.3.4(@sqlite.org/sqlite-wasm@3.51.2-build6)(effect@3.19.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.19.0)(zod@4.3.6)
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+    devDependencies:
+      '@cucumber/cucumber':
+        specifier: ^12.6.0
+        version: 12.6.0
+      '@inkjs/ui':
+        specifier: ^2.0.0
+        version: 2.0.0(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))
+      '@playwright/test':
+        specifier: ^1.58.2
+        version: 1.58.2
+      '@types/node':
+        specifier: ^25.2.3
+        version: 25.2.3
+      '@types/react':
+        specifier: ^19.2.14
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.3(@types/react@19.2.14)
+      '@types/react-test-renderer':
+        specifier: ^19.1.0
+        version: 19.1.0
+      '@vitejs/plugin-react':
+        specifier: ^5.1.4
+        version: 5.1.4(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))
+      '@vitest/coverage-v8':
+        specifier: ^4.0.18
+        version: 4.0.18(vitest@4.0.18(@types/node@25.2.3)(@vitest/ui@4.0.18)(tsx@4.21.0)(yaml@2.8.2))
+      '@vitest/ui':
+        specifier: ^4.0.18
+        version: 4.0.18(vitest@4.0.18)
+      ink:
+        specifier: ^6.7.0
+        version: 6.7.0(@types/react@19.2.14)(react@19.2.4)
+      ink-testing-library:
+        specifier: ^4.0.0
+        version: 4.0.0(@types/react@19.2.14)
+      playwright:
+        specifier: ^1.58.2
+        version: 1.58.2
+      react-test-renderer:
+        specifier: ^19.2.4
+        version: 19.2.4(react@19.2.4)
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vite:
+        specifier: ^7.3.1
+        version: 7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2)
+      vite-plugin-node-polyfills:
+        specifier: ^0.25.0
+        version: 0.25.0(rollup@4.57.1)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))
+      vitest:
+        specifier: ^4.0.18
+        version: 4.0.18(@types/node@25.2.3)(@vitest/ui@4.0.18)(tsx@4.21.0)(yaml@2.8.2)
+
+  naveditor-desktop:
+    dependencies:
+      '@devalbo/commands':
+        specifier: workspace:*
+        version: link:../packages/commands
+      '@devalbo/filesystem':
+        specifier: workspace:*
+        version: link:../packages/filesystem
+      '@devalbo/naveditor-lib':
+        specifier: workspace:*
+        version: link:../naveditor-lib
+      '@devalbo/shared':
+        specifier: workspace:*
+        version: link:../packages/shared
+      '@devalbo/state':
+        specifier: workspace:*
+        version: link:../packages/state
+      '@devalbo/ui':
+        specifier: workspace:*
+        version: link:../packages/ui
+      '@tauri-apps/api':
+        specifier: ^2.8.0
+        version: 2.10.1
+      '@xterm/xterm':
+        specifier: ^6.0.0
+        version: 6.0.0
+      commander:
+        specifier: ^14.0.3
+        version: 14.0.3
+      effect:
+        specifier: ^3.19.17
+        version: 3.19.17
+      ink-select-input:
+        specifier: ^6.2.0
+        version: 6.2.0(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
+      ink-web:
+        specifier: ^0.1.11
+        version: 0.1.11(@xterm/xterm@6.0.0)(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react-reconciler@0.33.0(react@19.2.4))(react@19.2.4)(scheduler@0.27.0)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))(xterm@5.3.0)
+      react:
+        specifier: ^19.2.4
+        version: 19.2.4
+      react-dom:
+        specifier: ^19.2.4
+        version: 19.2.4(react@19.2.4)
+      tinybase:
+        specifier: ^7.3.4
+        version: 7.3.4(@sqlite.org/sqlite-wasm@3.51.2-build6)(effect@3.19.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.19.0)(zod@4.3.6)
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+    devDependencies:
+      '@tauri-apps/cli':
+        specifier: ^2.8.4
+        version: 2.10.0
+      '@types/node':
+        specifier: ^25.2.3
+        version: 25.2.3
+      '@types/react':
+        specifier: ^19.2.14
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.3(@types/react@19.2.14)
+      '@vitejs/plugin-react':
+        specifier: ^5.1.4
+        version: 5.1.4(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vite:
+        specifier: ^7.3.1
+        version: 7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2)
+      vite-plugin-node-polyfills:
+        specifier: ^0.25.0
+        version: 0.25.0(rollup@4.57.1)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))
+
+  naveditor-lib:
     dependencies:
       '@devalbo/commands':
         specifier: workspace:*
@@ -38,91 +226,128 @@ importers:
       '@devalbo/ui':
         specifier: workspace:*
         version: link:../packages/ui
+      '@sqlite.org/sqlite-wasm':
+        specifier: 3.51.2-build6
+        version: 3.51.2-build6
+      '@xterm/xterm':
+        specifier: ^6.0.0
+        version: 6.0.0
       commander:
-        specifier: ^14.0.2
+        specifier: ^14.0.3
         version: 14.0.3
       effect:
-        specifier: ^3.19.14
+        specifier: ^3.19.17
         version: 3.19.17
+      ink:
+        specifier: ^6.7.0
+        version: 6.7.0(@types/react@19.2.14)(react@19.2.4)
       ink-select-input:
         specifier: ^6.2.0
         version: 6.2.0(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
       ink-web:
         specifier: ^0.1.11
-        version: 0.1.11(@xterm/xterm@5.5.0)(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react-reconciler@0.33.0(react@19.2.4))(react@19.2.4)(scheduler@0.27.0)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))(xterm@5.3.0)
+        version: 0.1.11(@xterm/xterm@6.0.0)(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react-reconciler@0.33.0(react@19.2.4))(react@19.2.4)(scheduler@0.27.0)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))(xterm@5.3.0)
       react:
-        specifier: ^19.2.3
+        specifier: ^19.2.4
         version: 19.2.4
       react-dom:
-        specifier: ^19.2.3
+        specifier: ^19.2.4
         version: 19.2.4(react@19.2.4)
       tinybase:
-        specifier: ^5.4.9
-        version: 5.4.9(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.19.0)
-      xterm:
-        specifier: ^5.3.0
-        version: 5.3.0
+        specifier: ^7.3.4
+        version: 7.3.4(@sqlite.org/sqlite-wasm@3.51.2-build6)(effect@3.19.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.19.0)(zod@4.3.6)
       zod:
-        specifier: ^4.3.4
+        specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@cucumber/cucumber':
-        specifier: ^12.5.0
-        version: 12.6.0
-      '@inkjs/ui':
-        specifier: ^2.0.0
-        version: 2.0.0(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))
-      '@playwright/test':
-        specifier: ^1.57.0
-        version: 1.58.2
       '@types/node':
-        specifier: ^25.0.3
+        specifier: ^25.2.3
         version: 25.2.3
       '@types/react':
-        specifier: ^19.2.7
+        specifier: ^19.2.14
         version: 19.2.14
       '@types/react-dom':
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.14)
-      '@types/react-test-renderer':
-        specifier: ^19.1.0
-        version: 19.1.0
-      '@vitejs/plugin-react':
-        specifier: ^5.1.2
-        version: 5.1.4(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))
-      '@vitest/coverage-v8':
-        specifier: ^4.0.16
-        version: 4.0.18(vitest@4.0.18(@types/node@25.2.3)(@vitest/ui@4.0.18)(tsx@4.21.0)(yaml@2.8.2))
-      '@vitest/ui':
-        specifier: ^4.0.16
-        version: 4.0.18(vitest@4.0.18)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  naveditor-web:
+    dependencies:
+      '@devalbo/commands':
+        specifier: workspace:*
+        version: link:../packages/commands
+      '@devalbo/filesystem':
+        specifier: workspace:*
+        version: link:../packages/filesystem
+      '@devalbo/naveditor-lib':
+        specifier: workspace:*
+        version: link:../naveditor-lib
+      '@devalbo/shared':
+        specifier: workspace:*
+        version: link:../packages/shared
+      '@devalbo/state':
+        specifier: workspace:*
+        version: link:../packages/state
+      '@devalbo/ui':
+        specifier: workspace:*
+        version: link:../packages/ui
+      '@sqlite.org/sqlite-wasm':
+        specifier: 3.51.2-build6
+        version: 3.51.2-build6
+      '@xterm/xterm':
+        specifier: ^6.0.0
+        version: 6.0.0
+      commander:
+        specifier: ^14.0.3
+        version: 14.0.3
+      effect:
+        specifier: ^3.19.17
+        version: 3.19.17
       ink:
-        specifier: ^6.6.0
+        specifier: ^6.7.0
         version: 6.7.0(@types/react@19.2.14)(react@19.2.4)
-      ink-testing-library:
-        specifier: ^4.0.0
-        version: 4.0.0(@types/react@19.2.14)
-      playwright:
-        specifier: ^1.57.0
-        version: 1.58.2
-      react-test-renderer:
-        specifier: ^19.2.0
+      ink-select-input:
+        specifier: ^6.2.0
+        version: 6.2.0(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
+      ink-web:
+        specifier: ^0.1.11
+        version: 0.1.11(@xterm/xterm@6.0.0)(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react-reconciler@0.33.0(react@19.2.4))(react@19.2.4)(scheduler@0.27.0)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))(xterm@5.3.0)
+      react:
+        specifier: ^19.2.4
+        version: 19.2.4
+      react-dom:
+        specifier: ^19.2.4
         version: 19.2.4(react@19.2.4)
-      tsx:
-        specifier: ^4.19.2
-        version: 4.21.0
+      tinybase:
+        specifier: ^7.3.4
+        version: 7.3.4(@sqlite.org/sqlite-wasm@3.51.2-build6)(effect@3.19.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.19.0)(zod@4.3.6)
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+    devDependencies:
+      '@types/node':
+        specifier: ^25.2.3
+        version: 25.2.3
+      '@types/react':
+        specifier: ^19.2.14
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.3(@types/react@19.2.14)
+      '@vitejs/plugin-react':
+        specifier: ^5.1.4
+        version: 5.1.4(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
       vite:
-        specifier: ^7.3.0
+        specifier: ^7.3.1
         version: 7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2)
       vite-plugin-node-polyfills:
         specifier: ^0.25.0
         version: 0.25.0(rollup@4.57.1)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))
-      vitest:
-        specifier: ^4.0.16
-        version: 4.0.18(@types/node@25.2.3)(@vitest/ui@4.0.18)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/commands:
     dependencies:
@@ -130,7 +355,7 @@ importers:
         specifier: workspace:*
         version: link:../shared
       effect:
-        specifier: ^3.19.14
+        specifier: ^3.19.17
         version: 3.19.17
       react:
         specifier: ^19.2.3
@@ -141,17 +366,23 @@ importers:
       '@devalbo/shared':
         specifier: workspace:*
         version: link:../shared
+      '@tauri-apps/api':
+        specifier: ^2.8.0
+        version: 2.10.1
+      tinybase:
+        specifier: ^7.3.4
+        version: 7.3.4(@sqlite.org/sqlite-wasm@3.51.2-build6)(effect@3.19.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.19.0)(zod@4.3.6)
 
   packages/shared:
     dependencies:
       effect:
-        specifier: ^3.19.14
+        specifier: ^3.19.17
         version: 3.19.17
       react:
         specifier: ^19.2.3
         version: 19.2.4
       zod:
-        specifier: ^4.3.4
+        specifier: ^4.3.6
         version: 4.3.6
 
   packages/state:
@@ -163,8 +394,8 @@ importers:
         specifier: ^19.2.3
         version: 19.2.4
       tinybase:
-        specifier: ^5.4.0
-        version: 5.4.9(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.19.0)
+        specifier: ^7.3.4
+        version: 7.3.4(@sqlite.org/sqlite-wasm@3.51.2-build6)(effect@3.19.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.19.0)(zod@4.3.6)
 
   packages/ui:
     dependencies:
@@ -182,13 +413,13 @@ importers:
         version: 6.2.0(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
       ink-web:
         specifier: ^0.1.11
-        version: 0.1.11(@xterm/xterm@5.5.0)(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react-reconciler@0.33.0(react@19.2.4))(react@19.2.4)(scheduler@0.27.0)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))(xterm@5.3.0)
+        version: 0.1.11(@xterm/xterm@6.0.0)(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react-reconciler@0.33.0(react@19.2.4))(react@19.2.4)(scheduler@0.27.0)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))(xterm@5.3.0)
       react:
         specifier: ^19.2.3
         version: 19.2.4
     devDependencies:
       '@types/react':
-        specifier: ^19.2.7
+        specifier: ^19.2.14
         version: 19.2.14
 
   packages/worker-bridge: {}
@@ -693,8 +924,86 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@sqlite.org/sqlite-wasm@3.51.2-build6':
+    resolution: {integrity: sha512-5ibsgipkqcLINZ5qNSp5KfrtL6KwiNVtwBksNO6zhTghhLmEf3/u1sPoAkgH5RzuLpMw7zi50IWgkZ0WhfqpaA==}
+    engines: {node: '>=22'}
+
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+
+  '@tauri-apps/api@2.10.1':
+    resolution: {integrity: sha512-hKL/jWf293UDSUN09rR69hrToyIXBb8CjGaWC7gfinvnQrBVvnLr08FeFi38gxtugAVyVcTa5/FD/Xnkb1siBw==}
+
+  '@tauri-apps/cli-darwin-arm64@2.10.0':
+    resolution: {integrity: sha512-avqHD4HRjrMamE/7R/kzJPcAJnZs0IIS+1nkDP5b+TNBn3py7N2aIo9LIpy+VQq0AkN8G5dDpZtOOBkmWt/zjA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@tauri-apps/cli-darwin-x64@2.10.0':
+    resolution: {integrity: sha512-keDmlvJRStzVFjZTd0xYkBONLtgBC9eMTpmXnBXzsHuawV2q9PvDo2x6D5mhuoMVrJ9QWjgaPKBBCFks4dK71Q==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@tauri-apps/cli-linux-arm-gnueabihf@2.10.0':
+    resolution: {integrity: sha512-e5u0VfLZsMAC9iHaOEANumgl6lfnJx0Dtjkd8IJpysZ8jp0tJ6wrIkto2OzQgzcYyRCKgX72aKE0PFgZputA8g==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [linux]
+
+  '@tauri-apps/cli-linux-arm64-gnu@2.10.0':
+    resolution: {integrity: sha512-YrYYk2dfmBs5m+OIMCrb+JH/oo+4FtlpcrTCgiFYc7vcs6m3QDd1TTyWu0u01ewsCtK2kOdluhr/zKku+KP7HA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@tauri-apps/cli-linux-arm64-musl@2.10.0':
+    resolution: {integrity: sha512-GUoPdVJmrJRIXFfW3Rkt+eGK9ygOdyISACZfC/bCSfOnGt8kNdQIQr5WRH9QUaTVFIwxMlQyV3m+yXYP+xhSVA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@tauri-apps/cli-linux-riscv64-gnu@2.10.0':
+    resolution: {integrity: sha512-JO7s3TlSxshwsoKNCDkyvsx5gw2QAs/Y2GbR5UE2d5kkU138ATKoPOtxn8G1fFT1aDW4LH0rYAAfBpGkDyJJnw==}
+    engines: {node: '>= 10'}
+    cpu: [riscv64]
+    os: [linux]
+
+  '@tauri-apps/cli-linux-x64-gnu@2.10.0':
+    resolution: {integrity: sha512-Uvh4SUUp4A6DVRSMWjelww0GnZI3PlVy7VS+DRF5napKuIehVjGl9XD0uKoCoxwAQBLctvipyEK+pDXpJeoHng==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@tauri-apps/cli-linux-x64-musl@2.10.0':
+    resolution: {integrity: sha512-AP0KRK6bJuTpQ8kMNWvhIpKUkQJfcPFeba7QshOQZjJ8wOS6emwTN4K5g/d3AbCMo0RRdnZWwu67MlmtJyxC1Q==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@tauri-apps/cli-win32-arm64-msvc@2.10.0':
+    resolution: {integrity: sha512-97DXVU3dJystrq7W41IX+82JEorLNY+3+ECYxvXWqkq7DBN6FsA08x/EFGE8N/b0LTOui9X2dvpGGoeZKKV08g==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@tauri-apps/cli-win32-ia32-msvc@2.10.0':
+    resolution: {integrity: sha512-EHyQ1iwrWy1CwMalEm9z2a6L5isQ121pe7FcA2xe4VWMJp+GHSDDGvbTv/OPdkt2Lyr7DAZBpZHM6nvlHXEc4A==}
+    engines: {node: '>= 10'}
+    cpu: [ia32]
+    os: [win32]
+
+  '@tauri-apps/cli-win32-x64-msvc@2.10.0':
+    resolution: {integrity: sha512-NTpyQxkpzGmU6ceWBTY2xRIEaS0ZLbVx1HE1zTA3TY/pV3+cPoPPOs+7YScr4IMzXMtOw7tLw5LEXo5oIG3qaQ==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  '@tauri-apps/cli@2.10.0':
+    resolution: {integrity: sha512-ZwT0T+7bw4+DPCSWzmviwq5XbXlM0cNoleDKOYPFYqcZqeKY31KlpoMW/MOON/tOFBPgi31a2v3w9gliqwL2+Q==}
+    engines: {node: '>= 10'}
+    hasBin: true
 
   '@teppeis/multimaps@3.0.0':
     resolution: {integrity: sha512-ID7fosbc50TbT0MK0EG12O+gAP3W3Aa/Pz4DaTtQtEvlc9Odaqi0de+xuZ7Li2GtK4HzEX7IuRWS/JmZLksR3Q==}
@@ -795,8 +1104,8 @@ packages:
     peerDependencies:
       '@xterm/xterm': ^5.0.0
 
-  '@xterm/xterm@5.5.0':
-    resolution: {integrity: sha512-hqJHYaQb5OptNunnyAnkHyM8aCjZ1MEIDTQu1iIbbTD/xops91NB5yq1ZK/dC2JDbVWtF23zUtl9JE2NqwT87A==}
+  '@xterm/xterm@6.0.0':
+    resolution: {integrity: sha512-TQwDdQGtwwDt+2cgKDLn0IRaSxYu1tSUjgKarSDkUM0ZNiSRXFpjxEsvc/Zgc5kq5omJ+V0a8/kIM2WD3sMOYg==}
 
   ansi-escapes@7.3.0:
     resolution: {integrity: sha512-BvU8nYgGQBxcmMuEeUEmNTvrMVjJNSH7RgW24vXexN4Ven6qCvy4TntnvlnwnMLTVlcRQQdbRY8NKnaIoeWDNg==}
@@ -929,8 +1238,8 @@ packages:
     resolution: {integrity: sha512-+ys997U96po4Kx/ABpBCqhA9EuxJaQWDQg7295H4hBphv3IZg0boBKuwYpt4YXp6MZ5AmZQnU/tyMTlRpaSejg==}
     engines: {node: '>= 0.4'}
 
-  caniuse-lite@1.0.30001769:
-    resolution: {integrity: sha512-BCfFL1sHijQlBGWBMuJyhZUhzo7wer5sVj9hqekB/7xn0Ypy+pER/edCYQm4exbXj4WiySGp40P8UuTh6w1srg==}
+  caniuse-lite@1.0.30001770:
+    resolution: {integrity: sha512-x/2CLQ1jHENRbHg5PSId2sXq1CIO1CISvwWAj027ltMVG2UNgW+w9oH2+HzgEIRFembL8bUlXtfbBHR1fCg2xw==}
 
   capital-case@1.0.4:
     resolution: {integrity: sha512-ds37W8CytHgwnhGGTi88pcPyR15qoNkOpYwmMMfnWqqWgESapLqvDx6huFjQ5vqWSn2Z06173XNA7LtMOeUh1A==}
@@ -1683,8 +1992,8 @@ packages:
   pure-rand@6.1.0:
     resolution: {integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==}
 
-  qs@6.14.2:
-    resolution: {integrity: sha512-V/yCWTTF7VJ9hIh18Ugr2zhJMP01MY7c5kh4J870L7imm6/DIzBsNLTXzMwUA3yZ5b/KBqLx8Kp3uRvd7xSe3Q==}
+  qs@6.15.0:
+    resolution: {integrity: sha512-mAZTtNCeetKMH+pSjrb76NAM8V9a05I9aBZOHztWy/UqcJdQYNsf59vrRKWnojAT9Y+GbIvoTBC++CPHqpDBhQ==}
     engines: {node: '>=0.6'}
 
   querystring-es3@0.2.1:
@@ -1796,6 +2105,11 @@ packages:
 
   semver@7.7.3:
     resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
+    engines: {node: '>=10'}
+    hasBin: true
+
+  semver@7.7.4:
+    resolution: {integrity: sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -1959,29 +2273,35 @@ packages:
   tiny-case@1.0.3:
     resolution: {integrity: sha512-Eet/eeMhkO6TX8mnUteS9zgPbUMQa4I6Kkp5ORiBD5476/m+PIRiumP5tmh5ioJpH7k51Kehawy2UDfsnxxY8Q==}
 
-  tinybase@5.4.9:
-    resolution: {integrity: sha512-sRXRqe/m6TEWrNZRDF/9JEbQoBTqDYsYQjz3uLQWwpQmhxFKydq2tb+yofzeMLFlj+b/m1TpUSbk8XBv8s7Fnw==}
-    hasBin: true
+  tinybase@7.3.4:
+    resolution: {integrity: sha512-GvCZQl3X3UUSqm93FuLgLf7OTq4mHcEQE5GZ8Zv/lQ9xi+h72PXGIbO/D/95VchOG98rZ1bK2fVSM+vO2FnXBA==}
     peerDependencies:
-      '@automerge/automerge-repo': ^1.2.1
-      '@cloudflare/workers-types': ^4.20250312.0
-      '@electric-sql/pglite': ^0.2.17
-      '@libsql/client': ^0.14.0
-      '@powersync/common': ^1.25.0
-      '@sqlite.org/sqlite-wasm': ^3.49.1-build2
+      '@automerge/automerge-repo': ^2.5.1
+      '@cloudflare/workers-types': ^4.20260214.0
+      '@electric-sql/pglite': ^0.3.15
+      '@libsql/client': ^0.17.0
+      '@powersync/common': ^1.46.0
+      '@sinclair/typebox': ^0.34.48
+      '@sqlite.org/sqlite-wasm': ^3.51.2-build6
       '@vlcn.io/crsqlite-wasm': ^0.16.0
+      arktype: ^2.1.29
+      bun: ^1.3.9
+      effect: ^3.19.17
       electric-sql: ^0.12.1
-      expo: ^52.0.4
-      expo-sqlite: ^15.1.2
-      partykit: ^0.0.111
-      partysocket: ^1.0.2
-      postgres: ^3.4.5
-      prettier: ^3.5.3
-      react: ^18.2.0
-      react-dom: ^18.2.0
+      expo: ^54.0.33
+      expo-sqlite: ^16.0.10
+      partykit: ^0.0.115
+      partysocket: ^1.1.13
+      postgres: ^3.4.8
+      react: ^19.2.4
+      react-dom: ^19.2.4
+      react-native-mmkv: 4.1.2
+      react-native-sqlite-storage: ^6.0.1
       sqlite3: ^5.1.7
-      ws: ^8.18.1
-      yjs: ^13.6.24
+      valibot: ^1.2.0
+      ws: ^8.19.0
+      yjs: ^13.6.29
+      zod: ^4.3.6
     peerDependenciesMeta:
       '@automerge/automerge-repo':
         optional: true
@@ -1993,9 +2313,17 @@ packages:
         optional: true
       '@powersync/common':
         optional: true
+      '@sinclair/typebox':
+        optional: true
       '@sqlite.org/sqlite-wasm':
         optional: true
       '@vlcn.io/crsqlite-wasm':
+        optional: true
+      arktype:
+        optional: true
+      bun:
+        optional: true
+      effect:
         optional: true
       electric-sql:
         optional: true
@@ -2009,17 +2337,23 @@ packages:
         optional: true
       postgres:
         optional: true
-      prettier:
-        optional: true
       react:
         optional: true
       react-dom:
         optional: true
+      react-native-mmkv:
+        optional: true
+      react-native-sqlite-storage:
+        optional: true
       sqlite3:
+        optional: true
+      valibot:
         optional: true
       ws:
         optional: true
       yjs:
+        optional: true
+      zod:
         optional: true
 
   tinybench@2.9.0:
@@ -2721,7 +3055,58 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.57.1':
     optional: true
 
+  '@sqlite.org/sqlite-wasm@3.51.2-build6': {}
+
   '@standard-schema/spec@1.1.0': {}
+
+  '@tauri-apps/api@2.10.1': {}
+
+  '@tauri-apps/cli-darwin-arm64@2.10.0':
+    optional: true
+
+  '@tauri-apps/cli-darwin-x64@2.10.0':
+    optional: true
+
+  '@tauri-apps/cli-linux-arm-gnueabihf@2.10.0':
+    optional: true
+
+  '@tauri-apps/cli-linux-arm64-gnu@2.10.0':
+    optional: true
+
+  '@tauri-apps/cli-linux-arm64-musl@2.10.0':
+    optional: true
+
+  '@tauri-apps/cli-linux-riscv64-gnu@2.10.0':
+    optional: true
+
+  '@tauri-apps/cli-linux-x64-gnu@2.10.0':
+    optional: true
+
+  '@tauri-apps/cli-linux-x64-musl@2.10.0':
+    optional: true
+
+  '@tauri-apps/cli-win32-arm64-msvc@2.10.0':
+    optional: true
+
+  '@tauri-apps/cli-win32-ia32-msvc@2.10.0':
+    optional: true
+
+  '@tauri-apps/cli-win32-x64-msvc@2.10.0':
+    optional: true
+
+  '@tauri-apps/cli@2.10.0':
+    optionalDependencies:
+      '@tauri-apps/cli-darwin-arm64': 2.10.0
+      '@tauri-apps/cli-darwin-x64': 2.10.0
+      '@tauri-apps/cli-linux-arm-gnueabihf': 2.10.0
+      '@tauri-apps/cli-linux-arm64-gnu': 2.10.0
+      '@tauri-apps/cli-linux-arm64-musl': 2.10.0
+      '@tauri-apps/cli-linux-riscv64-gnu': 2.10.0
+      '@tauri-apps/cli-linux-x64-gnu': 2.10.0
+      '@tauri-apps/cli-linux-x64-musl': 2.10.0
+      '@tauri-apps/cli-win32-arm64-msvc': 2.10.0
+      '@tauri-apps/cli-win32-ia32-msvc': 2.10.0
+      '@tauri-apps/cli-win32-x64-msvc': 2.10.0
 
   '@teppeis/multimaps@3.0.0': {}
 
@@ -2851,11 +3236,11 @@ snapshots:
       '@vitest/pretty-format': 4.0.18
       tinyrainbow: 3.0.3
 
-  '@xterm/addon-fit@0.10.0(@xterm/xterm@5.5.0)':
+  '@xterm/addon-fit@0.10.0(@xterm/xterm@6.0.0)':
     dependencies:
-      '@xterm/xterm': 5.5.0
+      '@xterm/xterm': 6.0.0
 
-  '@xterm/xterm@5.5.0': {}
+  '@xterm/xterm@6.0.0': {}
 
   ansi-escapes@7.3.0:
     dependencies:
@@ -2980,7 +3365,7 @@ snapshots:
   browserslist@4.28.1:
     dependencies:
       baseline-browser-mapping: 2.9.19
-      caniuse-lite: 1.0.30001769
+      caniuse-lite: 1.0.30001770
       electron-to-chromium: 1.5.286
       node-releases: 2.0.27
       update-browserslist-db: 1.2.3(browserslist@4.28.1)
@@ -3013,7 +3398,7 @@ snapshots:
       call-bind-apply-helpers: 1.0.2
       get-intrinsic: 1.3.0
 
-  caniuse-lite@1.0.30001769: {}
+  caniuse-lite@1.0.30001770: {}
 
   capital-case@1.0.4:
     dependencies:
@@ -3411,9 +3796,9 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.14
 
-  ink-web@0.1.11(@xterm/xterm@5.5.0)(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react-reconciler@0.33.0(react@19.2.4))(react@19.2.4)(scheduler@0.27.0)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))(xterm@5.3.0):
+  ink-web@0.1.11(@xterm/xterm@6.0.0)(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react-reconciler@0.33.0(react@19.2.4))(react@19.2.4)(scheduler@0.27.0)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))(xterm@5.3.0):
     dependencies:
-      '@xterm/addon-fit': 0.10.0(@xterm/xterm@5.5.0)
+      '@xterm/addon-fit': 0.10.0(@xterm/xterm@6.0.0)
       figlet: 1.10.0
       ink: 6.7.0(@types/react@19.2.14)(react@19.2.4)
       react: 19.2.4
@@ -3582,7 +3967,7 @@ snapshots:
 
   make-dir@4.0.0:
     dependencies:
-      semver: 7.7.3
+      semver: 7.7.4
 
   math-intrinsics@1.1.0: {}
 
@@ -3793,7 +4178,7 @@ snapshots:
 
   pure-rand@6.1.0: {}
 
-  qs@6.14.2:
+  qs@6.15.0:
     dependencies:
       side-channel: 1.1.0
 
@@ -3936,6 +4321,8 @@ snapshots:
   semver@6.3.1: {}
 
   semver@7.7.3: {}
+
+  semver@7.7.4: {}
 
   set-function-length@1.2.2:
     dependencies:
@@ -4117,11 +4504,14 @@ snapshots:
 
   tiny-case@1.0.3: {}
 
-  tinybase@5.4.9(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.19.0):
+  tinybase@7.3.4(@sqlite.org/sqlite-wasm@3.51.2-build6)(effect@3.19.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.19.0)(zod@4.3.6):
     optionalDependencies:
+      '@sqlite.org/sqlite-wasm': 3.51.2-build6
+      effect: 3.19.17
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
       ws: 8.19.0
+      zod: 4.3.6
 
   tinybench@2.9.0: {}
 
@@ -4192,7 +4582,7 @@ snapshots:
   url@0.11.4:
     dependencies:
       punycode: 1.4.1
-      qs: 6.14.2
+      qs: 6.15.0
 
   util-arity@1.1.0: {}
 

@@ -128,4 +128,12 @@ describe('file terminal commands', () => {
     expect(result.error).toBeUndefined();
     await expect(readFile(target, 'utf8')).rejects.toThrow();
   });
+
+  it('backend shows active filesystem adapter', async () => {
+    const result = await commands.backend([], { cwd: workspace });
+    const text = extractText(result.component);
+    expect(result.error).toBeUndefined();
+    expect(text).toContain('Platform: nodejs');
+    expect(text).toContain('Adapter: native-node');
+  });
 });

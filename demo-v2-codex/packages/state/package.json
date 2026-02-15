@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@devalbo/shared": "workspace:*",
-    "tinybase": "^5.4.0"
+    "tinybase": "^7.3.4"
   },
   "peerDependencies": {
     "react": "^19.2.3"

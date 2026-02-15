@@ -20,6 +20,7 @@ export function createProgram() {
   program.command('cp').description('Copy file or directory').argument('<source>', 'Source path').argument('<dest>', 'Destination path');
   program.command('mv').description('Move or rename file or directory').argument('<source>', 'Source path').argument('<dest>', 'Destination path');
   program.command('rm').description('Remove file or directory').argument('<path>', 'Path to remove');
+  program.command('backend').description('Show active filesystem backend');
 
   program
     .command('help')

@@ -1,7 +1,8 @@
 export enum RuntimePlatform {
   NodeJS = 'nodejs',
   Browser = 'browser',
-  Worker = 'worker'
+  Worker = 'worker',
+  Tauri = 'tauri'
 }
 
 export interface RuntimeEnv {

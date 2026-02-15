@@ -1,3 +1,6 @@
 packages:
   - 'packages/*'
   - 'naveditor'
+  - 'naveditor-lib'
+  - 'naveditor-web'
+  - 'naveditor-desktop'

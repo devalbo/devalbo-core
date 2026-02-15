@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { FS_STORAGE_KEY, getFilesystemBackendInfo } from '@/lib/file-operations';
 import {
   buildTree,
   type FsTreeNode,
@@ -74,18 +75,99 @@ export const FileExplorer: React.FC = () => {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [selectedIsDir, setSelectedIsDir] = useState(false);
   const [editorValue, setEditorValue] = useState('');
+  const [lastSyncedContent, setLastSyncedContent] = useState('');
   const [editorDirty, setEditorDirty] = useState(false);
   const [newFileName, setNewFileName] = useState('');
   const [status, setStatus] = useState<string>('');
+  const [backendLabel, setBackendLabel] = useState<string>('loading...');
 
   const refresh = useCallback(async () => {
     const nextTree = await buildTree(getDefaultCwd(), '/');
     setTree(nextTree);
   }, []);
 
+  const syncSelectedFileFromDisk = useCallback(async () => {
+    if (!selectedPath || selectedIsDir) return;
+    const latest = await readTextFile(getDefaultCwd(), selectedPath);
+
+    if (editorDirty) {
+      // Only report out-of-sync when disk changed away from the last synced baseline.
+      if (latest !== lastSyncedContent) {
+        setStatus(`Detected external changes for ${selectedPath}. Save or reload to apply.`);
+      }
+      return;
+    }
+
+    if (latest !== editorValue) {
+      setEditorValue(latest);
+      setLastSyncedContent(latest);
+      setEditorDirty(false);
+      setStatus(`Updated ${selectedPath} from another tab`);
+    }
+  }, [editorDirty, editorValue, lastSyncedContent, selectedIsDir, selectedPath]);
+
   useEffect(() => {
     refresh().catch((err: unknown) => setStatus(`Refresh failed: ${String(err)}`));
   }, [refresh]);
+
+  useEffect(() => {
+    getFilesystemBackendInfo()
+      .then((info) => {
+        const parts: string[] = [info.adapter];
+        if (info.persistence) parts.push(info.persistence);
+        if (info.baseDir) parts.push(info.baseDir);
+        setBackendLabel(parts.join(' | '));
+      })
+      .catch((err: unknown) => setBackendLabel(`error: ${String(err)}`));
+  }, []);
+
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== FS_STORAGE_KEY) return;
+      (async () => {
+        await refresh();
+        await syncSelectedFileFromDisk();
+      })().catch((err: unknown) => setStatus(`Refresh failed: ${String(err)}`));
+    };
+
+    const onFocus = () => {
+      (async () => {
+        await refresh();
+        await syncSelectedFileFromDisk();
+      })().catch((err: unknown) => setStatus(`Refresh failed: ${String(err)}`));
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        (async () => {
+          await refresh();
+          await syncSelectedFileFromDisk();
+        })().catch((err: unknown) => setStatus(`Refresh failed: ${String(err)}`));
+      }
+    };
+
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [refresh, syncSelectedFileFromDisk]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
+      (async () => {
+        await refresh();
+        await syncSelectedFileFromDisk();
+      })().catch((err: unknown) => setStatus(`Refresh failed: ${String(err)}`));
+    }, 1200);
+
+    return () => window.clearInterval(timer);
+  }, [refresh, syncSelectedFileFromDisk]);
 
   const breadcrumbs = useMemo(() => splitFsPath(currentDir), [currentDir]);
 
@@ -95,17 +177,21 @@ export const FileExplorer: React.FC = () => {
     if (node.isDirectory) {
       setCurrentDir(node.path);
       setEditorValue('');
+      setLastSyncedContent('');
       setEditorDirty(false);
       return;
     }
 
-    setEditorValue(await readTextFile(getDefaultCwd(), node.path));
+    const content = await readTextFile(getDefaultCwd(), node.path);
+    setEditorValue(content);
+    setLastSyncedContent(content);
     setEditorDirty(false);
   }, []);
 
   const saveFile = useCallback(async () => {
     if (!selectedPath || selectedIsDir) return;
     await writeTextFile(getDefaultCwd(), selectedPath, editorValue);
+    setLastSyncedContent(editorValue);
     setEditorDirty(false);
     setStatus(`Saved ${selectedPath}`);
     await refresh();
@@ -138,6 +224,7 @@ export const FileExplorer: React.FC = () => {
     setSelectedPath(null);
     setSelectedIsDir(false);
     setEditorValue('');
+    setLastSyncedContent('');
     setEditorDirty(false);
     await refresh();
   }, [refresh, selectedPath]);
@@ -184,6 +271,7 @@ export const FileExplorer: React.FC = () => {
       <div style={{ border: '1px solid #334155', borderRadius: '8px', background: '#0b1220', color: '#e2e8f0', padding: '12px' }}>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '10px' }}>
           <span style={{ color: '#94a3b8' }}>Current dir:</span>
+          <span style={{ color: '#67e8f9', fontSize: '12px' }}>Backend: {backendLabel}</span>
           <button onClick={() => setCurrentDir(getDefaultCwd())} style={{ background: '#1e293b', border: '1px solid #334155', color: '#e2e8f0', borderRadius: '6px', padding: '4px 8px' }}>
             {getDefaultCwd()}
           </button>

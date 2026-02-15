@@ -15,7 +15,12 @@
     },
     "./node": {
       "types": "./dist/node.d.ts",
+      "browser": "./dist/node.browser.js",
       "import": "./dist/node.js"
+    },
+    "./node.browser": {
+      "types": "./dist/node.browser.d.ts",
+      "import": "./dist/node.browser.js"
     }
   },
   "scripts": {
@@ -24,6 +29,8 @@
     "test": "echo 'no tests'"
   },
   "dependencies": {
-    "@devalbo/shared": "workspace:*"
+    "@devalbo/shared": "workspace:*",
+    "@tauri-apps/api": "^2.8.0",
+    "tinybase": "^7.3.4"
   }
 }
