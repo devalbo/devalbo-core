@@ -84,6 +84,7 @@ export const FileExplorer: React.FC = () => {
   const [selectedIsDir, setSelectedIsDir] = useState(false);
   const [selectedMimeType, setSelectedMimeType] = useState('application/octet-stream');
   const [selectedContent, setSelectedContent] = useState<FileContent | null>(null);
+  const [selectedRenderMode, setSelectedRenderMode] = useState<'preview' | 'edit' | 'viewEdit' | null>(null);
   const [lastSyncedContent, setLastSyncedContent] = useState<FileContent | null>(null);
   const [newFileName, setNewFileName] = useState('');
   const [status, setStatus] = useState<string>('');
@@ -137,12 +138,21 @@ export const FileExplorer: React.FC = () => {
     if (!selectedPath || selectedIsDir) return;
     const latestBytes = await readBytesFile(getDefaultCwd(), selectedPath);
     const latest = toFileContent(latestBytes, selectedMimeType);
-    if (!isSameContent(latest, lastSyncedContent)) {
+    const hasUnsavedLocalChanges = !isSameContent(selectedContent, lastSyncedContent);
+
+    if (hasUnsavedLocalChanges) {
+      if (!isSameContent(latest, lastSyncedContent)) {
+        setPassiveStatus(`Detected external changes for ${selectedPath}. Save to keep local edits.`);
+      }
+      return;
+    }
+
+    if (!isSameContent(latest, selectedContent)) {
       setSelectedContent(latest);
       setLastSyncedContent(latest);
       setPassiveStatus(`Updated ${selectedPath} from another tab`);
     }
-  }, [isSameContent, lastSyncedContent, selectedIsDir, selectedMimeType, selectedPath, setPassiveStatus, toFileContent]);
+  }, [isSameContent, lastSyncedContent, selectedContent, selectedIsDir, selectedMimeType, selectedPath, setPassiveStatus, toFileContent]);
 
   useEffect(() => {
     refresh().catch((err: unknown) => setActionStatus(`Refresh failed: ${String(err)}`, 'error'));
@@ -186,6 +196,7 @@ export const FileExplorer: React.FC = () => {
       setCurrentDir(node.path);
       setSelectedMimeType('application/octet-stream');
       setSelectedContent(null);
+      setSelectedRenderMode(null);
       setLastSyncedContent(null);
       return;
     }
@@ -195,6 +206,7 @@ export const FileExplorer: React.FC = () => {
     const content = toFileContent(bytes, mimeType);
     setSelectedMimeType(mimeType);
     setSelectedContent(content);
+    setSelectedRenderMode(null);
     setLastSyncedContent(content);
   }, [toFileContent]);
 
@@ -240,6 +252,7 @@ export const FileExplorer: React.FC = () => {
     setSelectedIsDir(false);
     setSelectedMimeType('application/octet-stream');
     setSelectedContent(null);
+    setSelectedRenderMode(null);
     setLastSyncedContent(null);
     await refresh();
   }, [refresh, selectedPath, setActionStatus]);
@@ -310,6 +323,7 @@ export const FileExplorer: React.FC = () => {
       setSelectedIsDir(false);
       setSelectedMimeType(uploadedMimeType);
       setSelectedContent(uploadedContent);
+      setSelectedRenderMode(null);
       setLastSyncedContent(uploadedContent);
       setCurrentDir(currentDir);
       console.info('[FileExplorer] Auto-selected uploaded file', {
@@ -324,6 +338,34 @@ export const FileExplorer: React.FC = () => {
     if (!selectedPath || selectedIsDir) return null;
     return resolveMimeTypeHandler(selectedMimeType);
   }, [selectedIsDir, selectedMimeType, selectedPath]);
+
+  const availableRenderModes = useMemo(() => {
+    if (!selectedHandler) return [] as Array<'preview' | 'edit' | 'viewEdit'>;
+    const modes: Array<'preview' | 'edit' | 'viewEdit'> = [];
+    if (selectedHandler.preview) modes.push('preview');
+    if (selectedHandler.edit) modes.push('edit');
+    if (selectedHandler.viewEdit) modes.push('viewEdit');
+    return modes;
+  }, [selectedHandler]);
+
+  useEffect(() => {
+    if (availableRenderModes.length === 0) {
+      setSelectedRenderMode(null);
+      return;
+    }
+    if (selectedRenderMode && availableRenderModes.includes(selectedRenderMode)) {
+      return;
+    }
+    if (availableRenderModes.includes('viewEdit')) {
+      setSelectedRenderMode('viewEdit');
+      return;
+    }
+    if (availableRenderModes.includes('edit')) {
+      setSelectedRenderMode('edit');
+      return;
+    }
+    setSelectedRenderMode('preview');
+  }, [availableRenderModes, selectedRenderMode]);
 
   const registeredHandlers = useMemo(() => listMimeTypeHandlers(), []);
 
@@ -439,28 +481,54 @@ export const FileExplorer: React.FC = () => {
         {selectedPath && !selectedIsDir && (
           <div>
             <div style={{ marginBottom: '8px', color: '#67e8f9' }}>MIME: {selectedMimeType}</div>
+            {availableRenderModes.length > 0 && (
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                {availableRenderModes.map((mode) => {
+                  const isActive = selectedRenderMode === mode;
+                  const label = mode === 'preview' ? 'View' : mode === 'edit' ? 'Edit' : 'View/Edit';
+                  return (
+                    <button
+                      key={mode}
+                      onClick={() => setSelectedRenderMode(mode)}
+                      style={{
+                        border: '1px solid #475569',
+                        borderRadius: '6px',
+                        padding: '4px 8px',
+                        cursor: 'pointer',
+                        background: isActive ? '#0f172a' : '#334155',
+                        color: '#e2e8f0'
+                      }}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {!selectedHandler && (
               <div style={{ color: '#94a3b8' }}>
                 No MIME handler registered for {selectedMimeType}
               </div>
             )}
-            {selectedHandler && selectedContent != null && selectedHandler.viewEdit && (
+            {selectedHandler && selectedContent != null && selectedRenderMode === 'viewEdit' && selectedHandler.viewEdit && (
               <selectedHandler.viewEdit
                 path={selectedPath}
                 mimeType={selectedMimeType}
                 content={selectedContent}
+                onChange={(nextContent) => setSelectedContent(nextContent)}
                 onSave={(nextContent) => saveFile(nextContent)}
               />
             )}
-            {selectedHandler && selectedContent != null && !selectedHandler.viewEdit && selectedHandler.edit && (
+            {selectedHandler && selectedContent != null && selectedRenderMode === 'edit' && selectedHandler.edit && (
               <selectedHandler.edit
                 path={selectedPath}
                 mimeType={selectedMimeType}
                 content={selectedContent}
+                onChange={(nextContent) => setSelectedContent(nextContent)}
                 onSave={(nextContent) => saveFile(nextContent)}
               />
             )}
-            {selectedHandler && selectedContent != null && !selectedHandler.viewEdit && !selectedHandler.edit && selectedHandler.preview && (
+            {selectedHandler && selectedContent != null && selectedRenderMode === 'preview' && selectedHandler.preview && (
               <selectedHandler.preview
                 path={selectedPath}
                 mimeType={selectedMimeType}

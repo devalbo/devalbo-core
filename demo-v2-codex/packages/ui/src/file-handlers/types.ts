@@ -14,6 +14,7 @@ export interface FilePreviewProps extends FileHandlerBaseProps {
 export interface FileEditProps extends FileHandlerBaseProps {
   content: FileContent;
   onSave: (nextContent: FileContent) => Promise<void> | void;
+  onChange?: (nextContent: FileContent) => void;
 }
 
 export type FilePreviewHandler = React.ComponentType<FilePreviewProps>;

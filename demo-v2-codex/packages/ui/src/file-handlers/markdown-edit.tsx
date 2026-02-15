@@ -1,35 +1,26 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { FileEditProps } from './types';
+import { toMarkdownText } from './markdown-utils';
 
-const coerceText = (content: string | Uint8Array): string =>
-  typeof content === 'string' ? content : new TextDecoder().decode(content);
-
-export const TextFileViewEdit: React.FC<FileEditProps> = ({ content, onSave, onChange }) => {
-  const incoming = useMemo(() => coerceText(content), [content]);
+export const MarkdownEdit: React.FC<FileEditProps> = ({ content, onSave, onChange }) => {
+  const incoming = useMemo(() => toMarkdownText(content), [content]);
   const [baseline, setBaseline] = useState(incoming);
   const [draft, setDraft] = useState(incoming);
   const [isSaving, setIsSaving] = useState(false);
-  const [remoteChanged, setRemoteChanged] = useState(false);
   const dirty = draft !== baseline;
 
   useEffect(() => {
     if (!dirty) {
       setBaseline(incoming);
       setDraft(incoming);
-      setRemoteChanged(false);
-      return;
     }
-    if (incoming !== baseline) {
-      setRemoteChanged(true);
-    }
-  }, [baseline, dirty, incoming]);
+  }, [dirty, incoming]);
 
   const save = async () => {
     setIsSaving(true);
     try {
       await onSave(draft);
       setBaseline(draft);
-      setRemoteChanged(false);
     } finally {
       setIsSaving(false);
     }
@@ -57,7 +48,7 @@ export const TextFileViewEdit: React.FC<FileEditProps> = ({ content, onSave, onC
           fontFamily: 'ui-monospace, Menlo, monospace'
         }}
       />
-      <div style={{ marginTop: '8px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div style={{ marginTop: '8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
         <button
           onClick={() => {
             save().catch(() => undefined);
@@ -68,14 +59,12 @@ export const TextFileViewEdit: React.FC<FileEditProps> = ({ content, onSave, onC
             border: 'none',
             color: '#dcfce7',
             borderRadius: '6px',
-            padding: '6px 10px',
-            cursor: dirty && !isSaving ? 'pointer' : 'not-allowed'
+            padding: '6px 10px'
           }}
         >
-          {isSaving ? 'Saving...' : 'Save'}
+          {isSaving ? 'Saving...' : 'Save Markdown'}
         </button>
         <span style={{ color: '#94a3b8' }}>{dirty ? 'Unsaved changes' : 'Saved'}</span>
-        {remoteChanged && <span style={{ color: '#f59e0b' }}>Changed externally while editing</span>}
       </div>
     </div>
   );

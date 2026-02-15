@@ -15,3 +15,6 @@ export * from './file-handlers/registry';
 export * from './file-handlers/defaults';
 export * from './file-handlers/text-file-view-edit';
 export * from './file-handlers/image-file-preview';
+export * from './file-handlers/markdown-view';
+export * from './file-handlers/markdown-edit';
+export * from './file-handlers/markdown-view-edit';
