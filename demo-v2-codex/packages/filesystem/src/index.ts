@@ -14,7 +14,7 @@ let driverPromise: Promise<IFilesystemDriver> | undefined;
 export type FilesystemBackendInfo = {
   platform: RuntimePlatform;
   adapter: 'native-node' | 'tauri' | 'browser-store';
-  persistence?: 'opfs' | 'localStorage';
+  persistence?: 'opfs' | 'indexeddb' | 'localStorage';
   baseDir?: string;
 };
 
@@ -63,7 +63,7 @@ export const getFilesystemBackendInfo = async (): Promise<FilesystemBackendInfo>
   }
 
   const browserDriver = driver as IFilesystemDriver & {
-    getBackendInfo?: () => Promise<{ adapter: 'browser-store'; persistence: 'opfs' | 'localStorage' }>;
+    getBackendInfo?: () => Promise<{ adapter: 'browser-store'; persistence: 'opfs' | 'indexeddb' | 'localStorage' }>;
   };
   const info = await browserDriver.getBackendInfo?.();
   const out: FilesystemBackendInfo = {

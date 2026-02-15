@@ -44,16 +44,22 @@ function ShellContent({ runtime }: { runtime: 'browser' | 'terminal' }) {
       return;
     }
 
-    const result = await command(args, {
+    const commandOptions = {
       cwd,
       setCwd,
       clearScreen: () => setHistory([]),
-      exit: runtime === 'terminal'
-        ? () => {
-          const nodeProcess = (globalThis as { process?: { exit?: (code?: number) => never } }).process;
-          nodeProcess?.exit?.(0);
+      ...(runtime === 'terminal'
+        ? {
+          exit: () => {
+            const nodeProcess = (globalThis as { process?: { exit?: (code?: number) => never } }).process;
+            nodeProcess?.exit?.(0);
+          }
         }
-        : undefined
+        : {})
+    };
+
+    const result = await command(args, {
+      ...commandOptions
     });
 
     if (commandName !== 'clear') {

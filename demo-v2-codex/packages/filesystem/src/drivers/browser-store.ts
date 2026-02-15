@@ -1,4 +1,12 @@
-import { asDirectoryPath, asFilePath, type DirectoryPath, type FileEntry, type FilePath } from '@devalbo/shared';
+import {
+  asDirectoryPath,
+  asFilePath,
+  WatchEventType,
+  type DirectoryPath,
+  type FileEntry,
+  type FilePath,
+  type WatchEvent
+} from '@devalbo/shared';
 import { createStore, type Store } from 'tinybase';
 import type { IFilesystemDriver } from '../interfaces';
 
@@ -15,8 +23,28 @@ type FsRow = {
 
 export interface BrowserBackendInfo {
   adapter: 'browser-store';
-  persistence: 'opfs' | 'localStorage';
+  persistence: 'opfs' | 'indexeddb' | 'localStorage';
 }
+
+type BrowserFsListener = (event: WatchEvent) => void;
+const browserFsListeners = new Set<BrowserFsListener>();
+
+export const subscribeBrowserFsEvents = (listener: BrowserFsListener): (() => void) => {
+  browserFsListeners.add(listener);
+  return () => {
+    browserFsListeners.delete(listener);
+  };
+};
+
+const emitBrowserFsEvent = (event: WatchEvent): void => {
+  for (const listener of browserFsListeners) {
+    try {
+      listener(event);
+    } catch {
+      // Ignore listener failures to avoid breaking filesystem operations.
+    }
+  }
+};
 
 const normalizeBrowserPath = (input: string): string => {
   if (input === '' || input === '.') return '/';
@@ -131,6 +159,7 @@ export class BrowserStoreFSDriver implements IFilesystemDriver {
 
   private initPromise: Promise<void> | undefined;
   private persistenceMode: BrowserBackendInfo['persistence'] = 'localStorage';
+  private hasStoreListener = false;
 
   constructor() {
     this.store = createStore();
@@ -152,19 +181,39 @@ export class BrowserStoreFSDriver implements IFilesystemDriver {
     });
   }
 
-  private ensureDirectoryPath(targetPath: string): void {
+  private ensureDirectoryPath(targetPath: string): string[] {
+    const created: string[] = [];
     const normalized = normalizeBrowserPath(targetPath);
     if (normalized === '/') {
-      if (!this.rowForPath('/')) this.setDirectoryRow('/');
-      return;
+      if (!this.rowForPath('/')) {
+        this.setDirectoryRow('/');
+        created.push('/');
+      }
+      return created;
     }
 
     const parts = normalized.split('/').filter(Boolean);
     let current = '';
     for (const part of parts) {
       current = `${current}/${part}`;
-      if (!this.rowForPath(current)) this.setDirectoryRow(current);
+      if (!this.rowForPath(current)) {
+        this.setDirectoryRow(current);
+        created.push(current);
+      }
     }
+    return created;
+  }
+
+  private ensureStoreListener(): void {
+    if (this.hasStoreListener) return;
+    this.store.addTableListener(FS_TABLE, () => {
+      emitBrowserFsEvent({
+        type: WatchEventType.Modified,
+        path: asFilePath('/'),
+        timestamp: new Date()
+      });
+    });
+    this.hasStoreListener = true;
   }
 
   private async init(): Promise<void> {
@@ -183,18 +232,33 @@ export class BrowserStoreFSDriver implements IFilesystemDriver {
         await opfsPersister.save();
         await opfsPersister.startAutoSave();
         await opfsPersister.startAutoLoad();
-      } catch (err) {
-        console.warn('OPFS init failed, falling back to localStorage persister:', err);
-        const { createLocalPersister } = await import('tinybase/persisters/persister-browser');
-        this.persistenceMode = 'localStorage';
-        const localPersister = createLocalPersister(this.store, FS_STORAGE_KEY);
-        this.persister = localPersister;
-        await localPersister.load();
-        seedBrowserStore(this.store);
-        await localPersister.save();
-        await localPersister.startAutoSave();
-        await localPersister.startAutoLoad();
+      } catch (opfsError) {
+        console.warn('OPFS init failed, trying IndexedDB persister:', opfsError);
+        try {
+          const { createIndexedDbPersister } = await import('tinybase/persisters/persister-indexed-db');
+          this.persistenceMode = 'indexeddb';
+          const indexedDbPersister = createIndexedDbPersister(this.store, FS_STORAGE_KEY);
+          this.persister = indexedDbPersister;
+          await indexedDbPersister.load();
+          seedBrowserStore(this.store);
+          await indexedDbPersister.save();
+          await indexedDbPersister.startAutoSave();
+          await indexedDbPersister.startAutoLoad();
+        } catch (indexedDbError) {
+          console.warn('IndexedDB init failed, falling back to localStorage persister:', indexedDbError);
+          const { createLocalPersister } = await import('tinybase/persisters/persister-browser');
+          this.persistenceMode = 'localStorage';
+          const localPersister = createLocalPersister(this.store, FS_STORAGE_KEY);
+          this.persister = localPersister;
+          await localPersister.load();
+          seedBrowserStore(this.store);
+          await localPersister.save();
+          await localPersister.startAutoSave();
+          await localPersister.startAutoLoad();
+        }
       }
+
+      this.ensureStoreListener();
     })();
 
     await this.initPromise;
@@ -223,7 +287,8 @@ export class BrowserStoreFSDriver implements IFilesystemDriver {
   async writeFile(path: FilePath, data: Uint8Array): Promise<void> {
     await this.init();
     const targetPath = normalizeBrowserPath(path);
-    this.ensureDirectoryPath(parentPath(targetPath));
+    const existed = Boolean(this.rowForPath(targetPath));
+    const createdDirectories = this.ensureDirectoryPath(parentPath(targetPath));
     this.store.setRow(FS_TABLE, targetPath, {
       name: baseName(targetPath),
       isDirectory: 0,
@@ -232,6 +297,18 @@ export class BrowserStoreFSDriver implements IFilesystemDriver {
       data: encodeBytes(data)
     });
     await this.save();
+    for (const createdPath of createdDirectories) {
+      emitBrowserFsEvent({
+        type: WatchEventType.Created,
+        path: asFilePath(createdPath),
+        timestamp: new Date()
+      });
+    }
+    emitBrowserFsEvent({
+      type: existed ? WatchEventType.Modified : WatchEventType.Created,
+      path: asFilePath(targetPath),
+      timestamp: new Date()
+    });
   }
 
   async readdir(path: DirectoryPath): Promise<FileEntry[]> {
@@ -279,15 +356,30 @@ export class BrowserStoreFSDriver implements IFilesystemDriver {
   async mkdir(path: DirectoryPath): Promise<void> {
     await this.init();
     const dirPath = normalizeBrowserPath(path);
-    this.ensureDirectoryPath(dirPath);
+    const createdPaths = this.ensureDirectoryPath(dirPath);
     await this.save();
+    for (const createdPath of createdPaths) {
+      emitBrowserFsEvent({
+        type: WatchEventType.Created,
+        path: asFilePath(createdPath),
+        timestamp: new Date()
+      });
+    }
   }
 
   async rm(path: FilePath): Promise<void> {
     await this.init();
     const targetPath = normalizeBrowserPath(path);
+    const existed = Boolean(this.rowForPath(targetPath));
     this.store.delRow(FS_TABLE, targetPath);
     await this.save();
+    if (existed) {
+      emitBrowserFsEvent({
+        type: WatchEventType.Deleted,
+        path: asFilePath(targetPath),
+        timestamp: new Date()
+      });
+    }
   }
 
   async exists(path: FilePath): Promise<boolean> {

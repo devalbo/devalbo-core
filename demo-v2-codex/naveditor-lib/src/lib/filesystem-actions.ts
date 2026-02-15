@@ -65,14 +65,18 @@ export const listDirectory = async (cwd: string, requested = '.'): Promise<FileE
 };
 
 export const readTextFile = async (cwd: string, requested: string): Promise<string> => {
+  const bytes = await readBytesFile(cwd, requested);
+  return new TextDecoder().decode(bytes);
+};
+
+export const readBytesFile = async (cwd: string, requested: string): Promise<Uint8Array> => {
   const targetPath = resolveFsPath(cwd, requested);
   const driver = await getDriver();
   const entry = await driver.stat(toFilePath(targetPath));
   if (entry.isDirectory) {
     throw new Error(`Not a file: ${requested}`);
   }
-  const data = await driver.readFile(toFilePath(targetPath));
-  return new TextDecoder().decode(data);
+  return driver.readFile(toFilePath(targetPath));
 };
 
 export const writeTextFile = async (cwd: string, requested: string, content: string): Promise<string> => {

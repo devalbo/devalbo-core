@@ -1,11 +1,16 @@
 import React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { InkTerminalBox } from 'ink-web';
+import { registerDefaultMimeTypeHandlers } from '@devalbo/ui';
 import { InteractiveShell } from '@/components/InteractiveShell';
 import { FileExplorer } from '@/web/FileExplorer';
 
 export const App: React.FC = () => {
   const [tab, setTab] = useState<'terminal' | 'explorer'>('terminal');
+
+  useEffect(() => {
+    registerDefaultMimeTypeHandlers();
+  }, []);
 
   return (
     <div style={{ maxWidth: '1200px', margin: '20px auto', padding: '0 16px' }}>

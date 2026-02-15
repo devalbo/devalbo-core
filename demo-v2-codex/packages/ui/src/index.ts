@@ -10,3 +10,8 @@ export * from './shell/terminal-shell-provider';
 export * from './shell/interactive-shell';
 export * from './hooks/use-platform';
 export * from './hooks/use-keyboard';
+export * from './file-handlers/types';
+export * from './file-handlers/registry';
+export * from './file-handlers/defaults';
+export * from './file-handlers/text-file-view-edit';
+export * from './file-handlers/image-file-preview';
