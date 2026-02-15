@@ -10,6 +10,9 @@
     "test:packages": "vitest run packages",
     "web:dev": "pnpm -C naveditor-web dev",
     "web:build": "pnpm -C naveditor-web build",
+    "terminal": "pnpm -C naveditor-terminal terminal",
+    "terminal:interactive": "pnpm -C naveditor-terminal interactive",
+    "terminal:dev": "pnpm -C naveditor-terminal terminal:dev",
     "desktop:dev": "pnpm -C naveditor-desktop dev",
     "desktop:build": "pnpm -C naveditor-desktop build"
   },

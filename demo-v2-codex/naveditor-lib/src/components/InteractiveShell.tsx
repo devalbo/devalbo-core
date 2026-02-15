@@ -3,6 +3,7 @@ import { Box, Text } from 'ink';
 import { TextInput } from '@devalbo/ui';
 import { commands, type CommandName } from '@/commands';
 import { BrowserShellProvider } from './BrowserShellProvider';
+import { TerminalShellProvider } from './TerminalShellProvider';
 import { detectPlatform, RuntimePlatform } from '@devalbo/shared';
 
 interface CommandOutput {
@@ -10,7 +11,7 @@ interface CommandOutput {
   component?: React.ReactNode;
 }
 
-function ShellContent() {
+function ShellContent({ runtime }: { runtime: 'browser' | 'terminal' }) {
   const [input, setInput] = useState('');
   const [inputKey, setInputKey] = useState(0);
   const [cwd, setCwd] = useState(() => {
@@ -46,7 +47,13 @@ function ShellContent() {
     const result = await command(args, {
       cwd,
       setCwd,
-      clearScreen: () => setHistory([])
+      clearScreen: () => setHistory([]),
+      exit: runtime === 'terminal'
+        ? () => {
+          const nodeProcess = (globalThis as { process?: { exit?: (code?: number) => never } }).process;
+          nodeProcess?.exit?.(0);
+        }
+        : undefined
     });
 
     if (commandName !== 'clear') {
@@ -79,8 +86,18 @@ function ShellContent() {
   );
 }
 
-export const InteractiveShell: React.FC = () => (
-  <BrowserShellProvider>
-    <ShellContent />
-  </BrowserShellProvider>
-);
+export const InteractiveShell: React.FC<{ runtime?: 'browser' | 'terminal' }> = ({ runtime = 'browser' }) => {
+  if (runtime === 'terminal') {
+    return (
+      <TerminalShellProvider>
+        <ShellContent runtime="terminal" />
+      </TerminalShellProvider>
+    );
+  }
+
+  return (
+    <BrowserShellProvider>
+      <ShellContent runtime="browser" />
+    </BrowserShellProvider>
+  );
+};

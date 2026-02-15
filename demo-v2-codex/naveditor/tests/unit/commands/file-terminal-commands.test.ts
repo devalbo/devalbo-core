@@ -136,4 +136,11 @@ describe('file terminal commands', () => {
     expect(text).toContain('Platform: nodejs');
     expect(text).toContain('Adapter: native-node');
   });
+
+  it('exit triggers terminal exit callback', async () => {
+    const exit = vi.fn();
+    const result = await commands.exit([], { cwd: workspace, exit });
+    expect(result.error).toBeUndefined();
+    expect(exit).toHaveBeenCalledTimes(1);
+  });
 });

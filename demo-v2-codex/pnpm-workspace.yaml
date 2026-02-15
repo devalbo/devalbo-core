@@ -4,3 +4,4 @@ packages:
   - 'naveditor-lib'
   - 'naveditor-web'
   - 'naveditor-desktop'
+  - 'naveditor-terminal'

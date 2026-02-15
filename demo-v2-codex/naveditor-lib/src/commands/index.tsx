@@ -21,6 +21,7 @@ type ExtendedCommandOptions = CommandOptions & {
   cwd?: string;
   setCwd?: (nextCwd: string) => void;
   clearScreen?: () => void;
+  exit?: () => void;
 };
 
 type AsyncCommandHandler = (args: string[], options?: ExtendedCommandOptions) => Promise<CommandResult>;
@@ -39,6 +40,7 @@ type CoreCommandName =
   | 'mv'
   | 'rm'
   | 'backend'
+  | 'exit'
   | 'help';
 
 type AliasCommandName = 'navigate' | 'edit';
@@ -199,6 +201,11 @@ const baseCommands: Record<CoreCommandName, AsyncCommandHandler> = {
     if (info.persistence) lines.push(`Persistence: ${info.persistence}`);
     if (info.baseDir) lines.push(`Base directory: ${info.baseDir}`);
     return makeOutput(lines.join('\n'));
+  },
+  exit: async (_args, options) => {
+    if (!options?.exit) return makeError('exit is only available in terminal interactive mode');
+    options.exit();
+    return makeOutput('Exiting...');
   },
   help: async () => {
     const program = createProgram();

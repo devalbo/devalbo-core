@@ -1,0 +1,33 @@
+{
+  "name": "naveditor-terminal",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "echo 'naveditor-terminal: no build step required'",
+    "terminal": "node --import tsx ../naveditor-lib/src/cli-node.tsx",
+    "interactive": "node --import tsx ../naveditor-lib/src/cli-node.tsx interactive",
+    "terminal:dev": "node --import tsx ../naveditor-lib/src/cli-node.tsx",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devalbo/naveditor-lib": "workspace:*",
+    "@devalbo/commands": "workspace:*",
+    "@devalbo/filesystem": "workspace:*",
+    "@devalbo/shared": "workspace:*",
+    "@devalbo/state": "workspace:*",
+    "@devalbo/ui": "workspace:*",
+    "commander": "^14.0.3",
+    "effect": "^3.19.17",
+    "ink": "^6.7.0",
+    "ink-select-input": "^6.2.0",
+    "react": "^19.2.4",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "@types/react": "^19.2.14",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

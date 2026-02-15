@@ -273,6 +273,58 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  naveditor-terminal:
+    dependencies:
+      '@devalbo/commands':
+        specifier: workspace:*
+        version: link:../packages/commands
+      '@devalbo/filesystem':
+        specifier: workspace:*
+        version: link:../packages/filesystem
+      '@devalbo/naveditor-lib':
+        specifier: workspace:*
+        version: link:../naveditor-lib
+      '@devalbo/shared':
+        specifier: workspace:*
+        version: link:../packages/shared
+      '@devalbo/state':
+        specifier: workspace:*
+        version: link:../packages/state
+      '@devalbo/ui':
+        specifier: workspace:*
+        version: link:../packages/ui
+      commander:
+        specifier: ^14.0.3
+        version: 14.0.3
+      effect:
+        specifier: ^3.19.17
+        version: 3.19.17
+      ink:
+        specifier: ^6.7.0
+        version: 6.7.0(@types/react@19.2.14)(react@19.2.4)
+      ink-select-input:
+        specifier: ^6.2.0
+        version: 6.2.0(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
+      react:
+        specifier: ^19.2.4
+        version: 19.2.4
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+    devDependencies:
+      '@types/node':
+        specifier: ^25.2.3
+        version: 25.2.3
+      '@types/react':
+        specifier: ^19.2.14
+        version: 19.2.14
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   naveditor-web:
     dependencies:
       '@devalbo/commands':

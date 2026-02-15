@@ -51,6 +51,7 @@ export const cli = {
   mv: (source: string, dest: string) => exec('mv', [source, dest]),
   rm: (target: string) => exec('rm', [target]),
   backend: () => exec('backend'),
+  exit: () => exec('exit'),
   help: () => exec('help'),
   helpText: async () => (await execText('help')).text
 };
