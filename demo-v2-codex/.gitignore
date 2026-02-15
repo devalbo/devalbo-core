@@ -1,0 +1,8 @@
+node_modules
+.DS_Store
+dist
+coverage
+.turbo
+tests/results
+.pnpm-home/
+.pnpm-store/

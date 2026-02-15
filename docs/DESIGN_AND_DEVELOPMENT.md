@@ -12,6 +12,21 @@ Typescript is the preferred language since it is well supported natively in PC e
 
 Vite is the preferred infrastructure/tooling for managing Typescript configuration.
 
+
+Use [Typescript](https://www.typescriptlang.org/) as the default programming for this project. Avoid using `node` specific decisions at all costs. Prefer decisions that support implementation in [WebAssembly](https://webassembly.org/).
+
+Use [Vite](https://vite.dev/) for managing Typescript application organization, configuration, and workflows. 
+
+Use [Zod](https://zod.dev/) for data serialization and management.
+
+Use [React](https://react.dev/) for app UI and execution framework.
+
+Use [Tanstack](https://tanstack.com/) for the development framework.
+
+use [Tinybase](https://tinybase.org/) for persistence management and framework.
+
+
+
 ## Libraries
 Libraries are needed for the following tasks:
 * command parsing for environment
