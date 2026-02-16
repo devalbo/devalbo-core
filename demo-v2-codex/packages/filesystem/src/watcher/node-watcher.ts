@@ -1,7 +1,7 @@
 import { watch } from 'node:fs';
 import path from 'node:path';
 import type { DirectoryPath, FilePath, WatchEvent } from '@devalbo/shared';
-import { asFilePath, WatchEventType } from '@devalbo/shared';
+import { unsafeAsFilePath, WatchEventType } from '@devalbo/shared';
 import type { IWatcherService } from '../interfaces';
 
 export class NodeWatcherService implements IWatcherService {
@@ -10,7 +10,7 @@ export class NodeWatcherService implements IWatcherService {
       if (!filename) return;
       callback({
         type: WatchEventType.Modified,
-        path: asFilePath(path.join(target, filename.toString())),
+        path: unsafeAsFilePath(path.join(target, filename.toString())),
         timestamp: new Date()
       });
     });

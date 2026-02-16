@@ -1,6 +1,6 @@
 import { promises as fs } from 'node:fs';
 import type { DirectoryPath, FilePath, WatchEvent } from '@devalbo/shared';
-import { asFilePath, WatchEventType } from '@devalbo/shared';
+import { unsafeAsFilePath, WatchEventType } from '@devalbo/shared';
 import type { IWatcherService } from '../interfaces';
 
 export class PollingWatcherService implements IWatcherService {
@@ -8,9 +8,9 @@ export class PollingWatcherService implements IWatcherService {
     const interval = setInterval(async () => {
       try {
         await fs.readdir(path);
-        callback({ type: WatchEventType.Modified, path: asFilePath(path), timestamp: new Date() });
+        callback({ type: WatchEventType.Modified, path: unsafeAsFilePath(path), timestamp: new Date() });
       } catch {
-        callback({ type: WatchEventType.Deleted, path: asFilePath(path), timestamp: new Date() });
+        callback({ type: WatchEventType.Deleted, path: unsafeAsFilePath(path), timestamp: new Date() });
       }
     }, 1500);
 

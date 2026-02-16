@@ -1,6 +1,6 @@
 import path from 'node:path';
 import type { DirectoryPath, FileEntry, FilePath } from '@devalbo/shared';
-import { asFilePath } from '@devalbo/shared';
+import { unsafeAsFilePath } from '@devalbo/shared';
 import type { IFilesystemDriver } from '../interfaces';
 
 interface MemoryNode {
@@ -41,7 +41,7 @@ export class InMemoryDriver implements IFilesystemDriver {
       if (rel.includes('/')) continue;
       entries.push({
         name: path.basename(nodePath),
-        path: asFilePath(nodePath),
+        path: unsafeAsFilePath(nodePath),
         isDirectory: node.isDirectory,
         size: node.data.length,
         mtime: node.mtime
@@ -58,7 +58,7 @@ export class InMemoryDriver implements IFilesystemDriver {
     }
     return {
       name: path.basename(filePath),
-      path: asFilePath(filePath),
+      path: unsafeAsFilePath(filePath),
       isDirectory: node.isDirectory,
       size: node.data.length,
       mtime: node.mtime

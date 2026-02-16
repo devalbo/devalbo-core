@@ -5,7 +5,7 @@ import { FileTree } from './FileTree';
 import { NavigatorStatusBar } from './NavigatorStatusBar';
 import { FILE_TREE_TABLE } from '@devalbo/state';
 import { Spinner } from '@/components/ui/spinner';
-import { asFilePath, type FileEntry } from '@devalbo/shared';
+import { unsafeAsFilePath, type FileEntry } from '@devalbo/shared';
 
 export const Navigator: React.FC<{ rootPath: string }> = ({ rootPath }) => {
   const { store, tree } = useFileTreeStore(rootPath);
@@ -14,7 +14,7 @@ export const Navigator: React.FC<{ rootPath: string }> = ({ rootPath }) => {
     const mtimeRaw = row.mtime ? String(row.mtime) : '';
     return {
       name: String(row.name ?? ''),
-      path: asFilePath(String(row.path ?? '')),
+      path: unsafeAsFilePath(String(row.path ?? '')),
       isDirectory: Boolean(row.isDirectory),
       size: Number(row.size ?? 0),
       ...(mtimeRaw ? { mtime: new Date(mtimeRaw) } : {})

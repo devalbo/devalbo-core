@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { FileEntry } from '@devalbo/shared';
-import { asDirectoryPath, asFilePath } from '@devalbo/shared';
+import { unsafeAsDirectoryPath, unsafeAsFilePath } from '@devalbo/shared';
 import { getDriver, getWatcher } from '../lib/file-operations';
 
 export interface UseFileTreeOptions {
@@ -27,7 +27,7 @@ export const useFileTree = ({ rootPath }: UseFileTreeOptions): UseFileTreeReturn
     setIsLoading(true);
     setError(null);
     try {
-      const rows = await driver.readdir(asDirectoryPath(rootPath));
+      const rows = await driver.readdir(unsafeAsDirectoryPath(rootPath));
       const sorted = [...rows].sort((a, b) => Number(b.isDirectory) - Number(a.isDirectory) || a.name.localeCompare(b.name));
       setEntries(sorted);
       setSelectedPath((prev) => prev ?? sorted[0]?.path ?? null);
@@ -44,7 +44,7 @@ export const useFileTree = ({ rootPath }: UseFileTreeOptions): UseFileTreeReturn
     let unwatch: (() => void) | undefined;
     void (async () => {
       const watcher = await getWatcher();
-      unwatch = watcher.watch(asDirectoryPath(rootPath), () => {
+      unwatch = watcher.watch(unsafeAsDirectoryPath(rootPath), () => {
         void refresh();
       });
     })();
@@ -59,7 +59,7 @@ export const useFileTree = ({ rootPath }: UseFileTreeOptions): UseFileTreeReturn
     selectedPath,
     isLoading,
     error,
-    select: (path) => setSelectedPath(asFilePath(path)),
+    select: (path) => setSelectedPath(unsafeAsFilePath(path)),
     refresh
   };
 };

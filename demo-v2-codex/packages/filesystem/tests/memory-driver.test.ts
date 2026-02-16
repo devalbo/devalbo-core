@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { TextDecoder, TextEncoder } from 'node:util';
-import { asDirectoryPath, asFilePath } from '@devalbo/shared';
+import { unsafeAsDirectoryPath, unsafeAsFilePath } from '@devalbo/shared';
 import { InMemoryDriver } from '../src/drivers/memory';
 
 describe('InMemoryDriver', () => {
   it('writes and reads files', async () => {
     const driver = new InMemoryDriver();
-    const file = asFilePath('/tmp/hello.txt');
+    const file = unsafeAsFilePath('/tmp/hello.txt');
 
     await driver.writeFile(file, new TextEncoder().encode('hello'));
     const output = await driver.readFile(file);
@@ -16,7 +16,7 @@ describe('InMemoryDriver', () => {
 
   it('supports stat and exists', async () => {
     const driver = new InMemoryDriver({ '/tmp/a.txt': 'a' });
-    const file = asFilePath('/tmp/a.txt');
+    const file = unsafeAsFilePath('/tmp/a.txt');
 
     expect(await driver.exists(file)).toBe(true);
     const stat = await driver.stat(file);
@@ -30,10 +30,10 @@ describe('InMemoryDriver', () => {
       '/tmp/nested/b.txt': 'b'
     });
 
-    await driver.mkdir(asDirectoryPath('/tmp'));
-    await driver.mkdir(asDirectoryPath('/tmp/nested'));
+    await driver.mkdir(unsafeAsDirectoryPath('/tmp'));
+    await driver.mkdir(unsafeAsDirectoryPath('/tmp/nested'));
 
-    const entries = await driver.readdir(asDirectoryPath('/tmp'));
+    const entries = await driver.readdir(unsafeAsDirectoryPath('/tmp'));
     const names = entries.map((entry) => entry.name).sort();
 
     expect(names).toEqual(['a.txt', 'nested']);

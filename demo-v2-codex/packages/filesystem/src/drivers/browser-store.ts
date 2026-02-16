@@ -1,6 +1,6 @@
 import {
-  asDirectoryPath,
-  asFilePath,
+  unsafeAsDirectoryPath,
+  unsafeAsFilePath,
   WatchEventType,
   type DirectoryPath,
   type FileEntry,
@@ -209,7 +209,7 @@ export class BrowserStoreFSDriver implements IFilesystemDriver {
     this.store.addTableListener(FS_TABLE, () => {
       emitBrowserFsEvent({
         type: WatchEventType.Modified,
-        path: asFilePath('/'),
+        path: unsafeAsFilePath('/'),
         timestamp: new Date()
       });
     });
@@ -300,13 +300,13 @@ export class BrowserStoreFSDriver implements IFilesystemDriver {
     for (const createdPath of createdDirectories) {
       emitBrowserFsEvent({
         type: WatchEventType.Created,
-        path: asFilePath(createdPath),
+        path: unsafeAsFilePath(createdPath),
         timestamp: new Date()
       });
     }
     emitBrowserFsEvent({
       type: existed ? WatchEventType.Modified : WatchEventType.Created,
-      path: asFilePath(targetPath),
+      path: unsafeAsFilePath(targetPath),
       timestamp: new Date()
     });
   }
@@ -330,7 +330,7 @@ export class BrowserStoreFSDriver implements IFilesystemDriver {
         const fsRow = row as FsRow;
         return {
           name: fsRow.name ?? baseName(entryPath),
-          path: asFilePath(entryPath),
+          path: unsafeAsFilePath(entryPath),
           isDirectory: fsRow.isDirectory === 1,
           size: fsRow.size ?? 0,
           mtime: fsRow.mtime ? new Date(fsRow.mtime) : new Date()
@@ -346,7 +346,7 @@ export class BrowserStoreFSDriver implements IFilesystemDriver {
 
     return {
       name: row.name ?? baseName(targetPath),
-      path: asFilePath(targetPath),
+      path: unsafeAsFilePath(targetPath),
       isDirectory: row.isDirectory === 1,
       size: row.size ?? 0,
       mtime: row.mtime ? new Date(row.mtime) : new Date()
@@ -361,7 +361,7 @@ export class BrowserStoreFSDriver implements IFilesystemDriver {
     for (const createdPath of createdPaths) {
       emitBrowserFsEvent({
         type: WatchEventType.Created,
-        path: asFilePath(createdPath),
+        path: unsafeAsFilePath(createdPath),
         timestamp: new Date()
       });
     }
@@ -376,7 +376,7 @@ export class BrowserStoreFSDriver implements IFilesystemDriver {
     if (existed) {
       emitBrowserFsEvent({
         type: WatchEventType.Deleted,
-        path: asFilePath(targetPath),
+        path: unsafeAsFilePath(targetPath),
         timestamp: new Date()
       });
     }
@@ -397,5 +397,5 @@ export class BrowserStoreFSDriver implements IFilesystemDriver {
   }
 }
 
-export const toFilePath = (path: string): FilePath => asFilePath(normalizeBrowserPath(path));
-export const toDirectoryPath = (path: string): DirectoryPath => asDirectoryPath(normalizeBrowserPath(path));
+export const toFilePath = (path: string): FilePath => unsafeAsFilePath(normalizeBrowserPath(path));
+export const toDirectoryPath = (path: string): DirectoryPath => unsafeAsDirectoryPath(normalizeBrowserPath(path));

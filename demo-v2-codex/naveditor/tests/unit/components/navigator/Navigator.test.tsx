@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'ink-testing-library';
-import { asFilePath } from '@devalbo/shared';
+import { unsafeAsFilePath } from '@devalbo/shared';
 import { createDevalboStore, FILE_TREE_TABLE } from '@devalbo/state';
 import { Navigator } from '@/components/navigator/Navigator';
 
@@ -32,7 +32,7 @@ describe('Navigator', () => {
     mockUseFileTreeStore.mockReturnValue({
       store,
       tree: {
-        entries: [{ name: 'a.txt', path: asFilePath('/root/a.txt'), isDirectory: false }],
+        entries: [{ name: 'a.txt', path: unsafeAsFilePath('/root/a.txt'), isDirectory: false }],
         selectedPath: '/root/a.txt',
         isLoading: false,
         error: null,

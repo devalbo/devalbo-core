@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { act, create } from 'react-test-renderer';
-import { asFilePath } from '@devalbo/shared';
+import { unsafeAsFilePath } from '@devalbo/shared';
 import type { UseFileTreeReturn } from '@/hooks/use-file-tree';
 
 const mockReaddir = vi.fn();
@@ -31,8 +31,8 @@ describe('useFileTree', () => {
     mockUnwatch.mockReset();
     mockWatch.mockReset().mockReturnValue(mockUnwatch);
     mockReaddir.mockReset().mockResolvedValue([
-      { name: 'b.txt', path: asFilePath('/b.txt'), isDirectory: false },
-      { name: 'a', path: asFilePath('/a'), isDirectory: true }
+      { name: 'b.txt', path: unsafeAsFilePath('/b.txt'), isDirectory: false },
+      { name: 'a', path: unsafeAsFilePath('/a'), isDirectory: true }
     ]);
   });
 
@@ -71,7 +71,7 @@ describe('useFileTree', () => {
       await flush();
     });
 
-    mockReaddir.mockResolvedValueOnce([{ name: 'new.txt', path: asFilePath('/new.txt'), isDirectory: false }]);
+    mockReaddir.mockResolvedValueOnce([{ name: 'new.txt', path: unsafeAsFilePath('/new.txt'), isDirectory: false }]);
 
     await act(async () => {
       await latest?.refresh();

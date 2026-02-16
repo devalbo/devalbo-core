@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { asFilePath } from '@devalbo/shared';
+import { unsafeAsFilePath } from '@devalbo/shared';
 import { getDriver } from '../lib/file-operations';
 
 export interface UseFileEditorReturn {
@@ -37,7 +37,7 @@ export const useFileEditor = (filePath: string): UseFileEditorReturn => {
     setIsLoading(true);
     setError(null);
     try {
-      const bytes = await driver.readFile(asFilePath(filePath));
+      const bytes = await driver.readFile(unsafeAsFilePath(filePath));
       const { text, binary } = decodeUtf8(bytes);
       setIsBinary(binary);
       setFileExists(true);
@@ -65,7 +65,7 @@ export const useFileEditor = (filePath: string): UseFileEditorReturn => {
   const save = useCallback(async () => {
     const driver = await getDriver();
     const data = new TextEncoder().encode(content);
-    await driver.writeFile(asFilePath(filePath), data);
+    await driver.writeFile(unsafeAsFilePath(filePath), data);
     setSavedContent(content);
     setFileExists(true);
     setIsBinary(false);
@@ -73,7 +73,7 @@ export const useFileEditor = (filePath: string): UseFileEditorReturn => {
 
   const createFile = useCallback(async () => {
     const driver = await getDriver();
-    await driver.writeFile(asFilePath(filePath), new Uint8Array());
+    await driver.writeFile(unsafeAsFilePath(filePath), new Uint8Array());
     setContent('');
     setSavedContent('');
     setFileExists(true);

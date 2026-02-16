@@ -4,7 +4,7 @@ Shared primitives across devalbo packages.
 
 ## Exports
 
-- branded path helpers: `asFilePath`, `asDirectoryPath`
+- branded path helpers: `unsafeAsFilePath`, `unsafeAsDirectoryPath`
 - platform detection: `detectPlatform`
 - DI container: `ServiceContainer`
 - typed errors: `MissingArgument`, `FileNotFound`
@@ -12,8 +12,8 @@ Shared primitives across devalbo packages.
 ## Example
 
 ```ts
-import { detectPlatform, asFilePath } from '@devalbo/shared';
+import { detectPlatform, unsafeAsFilePath } from '@devalbo/shared';
 
 const env = detectPlatform();
-const file = asFilePath('/tmp/demo.txt');
+const file = unsafeAsFilePath('/tmp/demo.txt');
 ```

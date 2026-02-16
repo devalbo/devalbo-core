@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'ink-testing-library';
-import { asFilePath } from '@devalbo/shared';
+import { unsafeAsFilePath } from '@devalbo/shared';
 import { FileTree } from '@/components/navigator/FileTree';
 
 vi.mock('@devalbo/ui', () => ({
@@ -17,7 +17,7 @@ describe('FileTree', () => {
   it('renders file entries', () => {
     const view = render(
       <FileTree
-        entries={[{ name: 'a.txt', path: asFilePath('/a.txt'), isDirectory: false }]}
+        entries={[{ name: 'a.txt', path: unsafeAsFilePath('/a.txt'), isDirectory: false }]}
         selectedPath={null}
         isLoading={false}
         error={null}

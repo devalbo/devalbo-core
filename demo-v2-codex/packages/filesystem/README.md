@@ -13,8 +13,8 @@ Filesystem drivers and watcher abstractions.
 
 ```ts
 import { InMemoryDriver } from '@devalbo/filesystem';
-import { asFilePath } from '@devalbo/shared';
+import { unsafeAsFilePath } from '@devalbo/shared';
 
 const fs = new InMemoryDriver();
-await fs.writeFile(asFilePath('/tmp/a.txt'), new TextEncoder().encode('hello'));
+await fs.writeFile(unsafeAsFilePath('/tmp/a.txt'), new TextEncoder().encode('hello'));
 ```

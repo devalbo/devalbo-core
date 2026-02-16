@@ -1,5 +1,5 @@
 import path from 'path';
-import { asFilePath, type DirectoryPath, type FileEntry, type FilePath } from '@devalbo/shared';
+import { unsafeAsFilePath, type DirectoryPath, type FileEntry, type FilePath } from '@devalbo/shared';
 import type { IFilesystemDriver } from '../interfaces';
 
 type TauriFsEntry = {
@@ -53,7 +53,7 @@ export class TauriFSDriver implements IFilesystemDriver {
     const virtualPath = rel ? `/${rel.split(path.sep).join('/')}` : '/';
     return {
       name: entry.name,
-      path: asFilePath(virtualPath),
+      path: unsafeAsFilePath(virtualPath),
       isDirectory: entry.isDirectory,
       size: entry.size,
       mtime: entry.mtimeMs ? new Date(entry.mtimeMs) : new Date()

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { asDirectoryPath, detectPlatform, RuntimePlatform } from '@devalbo/shared';
+import { unsafeAsDirectoryPath, detectPlatform, RuntimePlatform } from '@devalbo/shared';
 import {
   listMimeTypeHandlers,
   resolveMimeTypeHandler,
@@ -183,7 +183,7 @@ export const FileExplorer: React.FC = () => {
     let unwatch: (() => void) | undefined;
     void (async () => {
       const watcher = await getWatcher();
-      unwatch = watcher.watch(asDirectoryPath('/'), (event) => {
+      unwatch = watcher.watch(unsafeAsDirectoryPath('/'), (event) => {
         console.info('[FileExplorer] Watch event', event);
         void (async () => {
           await refresh();

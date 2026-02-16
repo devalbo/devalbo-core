@@ -1,6 +1,6 @@
 import path from 'path';
 import type { FileEntry } from '@devalbo/shared';
-import { asDirectoryPath, asFilePath, detectPlatform, RuntimePlatform } from '@devalbo/shared';
+import { unsafeAsDirectoryPath, unsafeAsFilePath, detectPlatform, RuntimePlatform } from '@devalbo/shared';
 import { getDriver } from './file-operations';
 import {
   bftNodeToBytes,
@@ -39,8 +39,8 @@ export const resolveFsPath = (cwd: string, input = '.'): string => {
 
 const basename = (targetPath: string): string => pathOps().basename(targetPath);
 
-const toFilePath = (targetPath: string) => asFilePath(targetPath);
-const toDirectoryPath = (targetPath: string) => asDirectoryPath(targetPath);
+const toFilePath = (targetPath: string) => unsafeAsFilePath(targetPath);
+const toDirectoryPath = (targetPath: string) => unsafeAsDirectoryPath(targetPath);
 
 const validatePathArg = (value: string, label: string): string => {
   const parsed = PathTokenSchema.safeParse(value);
