@@ -35,16 +35,16 @@ describe('state accessors', () => {
   });
 
   it('returns null for invalid entry rows', () => {
-    const store = createDevalboStore();
-
-    store.setRow('entries', 'bad-entry', {
-      path: 123 as unknown as string,
-      name: 'bad',
-      parentPath: '/',
-      isDirectory: false,
-      size: 1,
-      mtime: '2026-02-16T00:00:00.000Z'
-    });
+    const store = {
+      getRow: () => ({
+        path: 123,
+        name: 'bad',
+        parentPath: '/',
+        isDirectory: false,
+        size: 1,
+        mtime: '2026-02-16T00:00:00.000Z'
+      })
+    } as unknown as ReturnType<typeof createDevalboStore>;
 
     expect(getEntry(store, 'bad-entry')).toBeNull();
   });
@@ -119,15 +119,15 @@ describe('state accessors', () => {
   });
 
   it('returns null for invalid buffer rows', () => {
-    const store = createDevalboStore();
-
-    store.setRow('buffers', 'bad-buffer', {
-      path: '/README.md',
-      content: 'x',
-      isDirty: 'yes' as unknown as boolean,
-      cursorLine: 1,
-      cursorCol: 2
-    });
+    const store = {
+      getRow: () => ({
+        path: '/README.md',
+        content: 'x',
+        isDirty: 'yes',
+        cursorLine: 1,
+        cursorCol: 2
+      })
+    } as unknown as ReturnType<typeof createDevalboStore>;
 
     expect(getBuffer(store, 'bad-buffer')).toBeNull();
   });
