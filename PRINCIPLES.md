@@ -13,16 +13,13 @@ To treat discoverability and comprehensibility as first class design considerati
 ## Details
 
 See [/docs](/docs/) for more details about specific topics.
+* [Setting up a New Project](/docs/SETUP_NEW.md)
 * [Testing](/docs/TESTING.md)
 * [Deployment and Operation](/docs/DEPLOYMENT_AND_OPERATION.md)
 * [Design and Development](/docs/DESIGN_AND_DEVELOPMENT.md)
 * [Sharing and Communication](/docs/SHARING_AND_COMMUNICATION.md)
 * [Tooling](/docs/TOOLING.md)
 
-
-## New project
-
-Start a new project [with these instructions](/docs/SETUP_NEW.md).
 
 
 ## Future Considerations
