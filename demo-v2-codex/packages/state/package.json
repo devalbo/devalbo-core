@@ -17,10 +17,10 @@
   },
   "dependencies": {
     "@devalbo/shared": "workspace:*",
-    "tinybase": "^7.3.4",
-    "zod": "^4.3.6"
+    "tinybase": "catalog:",
+    "zod": "catalog:"
   },
   "peerDependencies": {
-    "react": "^19.2.4"
+    "react": "catalog:"
   }
 }

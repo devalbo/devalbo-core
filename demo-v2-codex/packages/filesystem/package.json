@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@devalbo/shared": "workspace:*",
-    "@tauri-apps/api": "^2.8.0",
-    "tinybase": "^7.3.4"
+    "@tauri-apps/api": "catalog:",
+    "tinybase": "catalog:"
   }
 }

@@ -16,25 +16,25 @@
     "@devalbo/shared": "workspace:*",
     "@devalbo/state": "workspace:*",
     "@devalbo/ui": "workspace:*",
-    "@sqlite.org/sqlite-wasm": "3.51.2-build6",
-    "@xterm/xterm": "^6.0.0",
-    "commander": "^14.0.3",
-    "effect": "^3.19.17",
-    "ink-select-input": "^6.2.0",
-    "ink-web": "^0.1.11",
-    "ink": "^6.7.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "tinybase": "^7.3.4",
-    "zod": "^4.3.6"
+    "@sqlite.org/sqlite-wasm": "catalog:",
+    "@xterm/xterm": "catalog:",
+    "commander": "catalog:",
+    "effect": "catalog:",
+    "ink-select-input": "catalog:",
+    "ink-web": "catalog:",
+    "ink": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tinybase": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^25.2.3",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.4",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1",
-    "vite-plugin-node-polyfills": "^0.25.0"
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-node-polyfills": "catalog:"
   }
 }

@@ -18,14 +18,14 @@
   "dependencies": {
     "@devalbo/shared": "workspace:*",
     "@inkjs/ui": "^2.0.0",
-    "ink-select-input": "^6.2.0",
-    "ink-web": "^0.1.11"
+    "ink-select-input": "catalog:",
+    "ink-web": "catalog:"
   },
   "devDependencies": {
-    "@types/react": "^19.2.14"
+    "@types/react": "catalog:"
   },
   "peerDependencies": {
-    "ink": "^6.7.0",
-    "react": "^19.2.4"
+    "ink": "catalog:",
+    "react": "catalog:"
   }
 }
