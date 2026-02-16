@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@devalbo/shared": "workspace:*",
-    "@inkjs/ui": "^2.0.0",
+    "@inkjs/ui": "catalog:",
     "ink-select-input": "catalog:",
     "ink-web": "catalog:"
   },

@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@cucumber/cucumber": "^12.6.0",
-    "@inkjs/ui": "^2.0.0",
+    "@inkjs/ui": "catalog:",
     "@playwright/test": "^1.58.2",
     "@types/node": "catalog:",
     "@types/react": "catalog:",

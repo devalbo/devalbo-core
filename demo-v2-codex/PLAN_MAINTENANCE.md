@@ -124,17 +124,14 @@ If a feature branch needs a dependency that is already out of sync in `main`:
 
 ## Catalog Migration
 
-Since the workspace currently uses inline versions in each `package.json`, adopt the catalog in one pass:
+**Status: Complete** (as of 2026-02-16).
 
-1. **Inventory all direct dependencies** across every workspace `package.json`. Identify which deps appear in 2+ packages.
-2. **Add a `catalog` section** to `pnpm-workspace.yaml` with the latest version of each shared dep.
-3. **Replace version strings** in each `package.json` with `catalog:` for every cataloged dep.
-4. **Run `pnpm install`** to regenerate the lockfile against catalog-resolved versions.
-5. **Fix forward** — if the latest version introduces breaking changes compared to what was previously declared, fix all consuming code now.
-6. **Verify**: `pnpm -r run build && pnpm -r run test`
-7. **Commit** as a single maintenance commit: `migrate shared dependencies to pnpm catalog`
+All shared dependencies are defined in the `catalog` section of `pnpm-workspace.yaml` and referenced via `catalog:` in each consumer's `package.json`. Inline versions remain only for dependencies used by exactly one package.
 
-After migration, inline versions should only remain for deps used by exactly one package.
+When adding a new shared dependency in the future:
+1. Add the version to the `catalog` section of `pnpm-workspace.yaml`.
+2. Reference it as `catalog:` in every consuming `package.json`.
+3. Never add an inline version for a dependency that already exists in the catalog.
 
 ## Workspace Inventory
 
