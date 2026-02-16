@@ -16,13 +16,15 @@ This plan incorporates findings from the original draft plan, its review, a full
 
 ### What needs attention before adding scope
 
-1. **The command file is already at capacity.** `naveditor-lib/src/commands/index.tsx` is 456 lines containing every command handler in a flat `Record<CommandName, AsyncCommandHandler>`. Adding 22+ social subcommands here would push it past 1000 lines. This file must be split before new commands go in.
+> **Status: All items resolved.** See `PRE_4_MAINTENANCE.md` for implementation details.
 
-2. **Commands are untestable in isolation.** Handlers return `CommandResult` which wraps a React component. There's no way to assert on command output without rendering React. The command framework needs a structured data result path alongside the component result.
+1. ~~**The command file is already at capacity.**~~ **Done.** Split into `filesystem.ts`, `system.ts`, `io.ts`, `_util.tsx`, and barrel `index.ts`.
 
-3. **No typed accessor layer.** The store exposes raw TinyBase `getRow`/`setRow`/`getCell` directly. There's no validation on reads or writes at the store level — callers deal with untyped `Row` objects. tb-solid-pod solves this with Zod-validated accessors; this project should do the same, starting with the existing `entries` and `buffers` tables.
+2. ~~**Commands are untestable in isolation.**~~ **Done.** Added optional `data` and `status` fields to `CommandResult`.
 
-4. **Schema enforcement vs. JSON-LD reality.** The current store uses `setTablesSchema` to constrain cell names and types. This works for fixed-shape domain data (file tree rows, editor buffers). But JSON-LD objects use IRI property keys (`http://xmlns.com/foaf/0.1/name`) and nested structures (`NodeRef` objects, arrays of members) that don't fit into a fixed-name scalar-cell schema. The storage strategy must resolve this tension explicitly — the draft plan papered over it.
+3. ~~**No typed accessor layer.**~~ **Done.** Added Zod-validated accessors for `entries` and `buffers` tables, with tests.
+
+4. ~~**Schema enforcement vs. JSON-LD reality.**~~ **Resolved by design decision.** Domain cells are the source of truth; JSON-LD is a serialization format for import/export (see Core Architectural Decision below).
 
 ---
 
@@ -286,28 +288,13 @@ Bump to `2` when social tables are added. On load, if `schemaVersion > expected`
 
 ## Phased Delivery
 
-### Phase 0: Structural Preparation
+### Phase 0: Structural Preparation — COMPLETE
 
-Refactor existing code to support the integration without adding any social functionality.
+> Implemented in commit `7bfa7c8`. See `PRE_4_MAINTENANCE.md` for full details.
 
-**0a. Split command file**
-- Break `naveditor-lib/src/commands/index.tsx` into `filesystem.ts`, `system.ts`, `io.ts`, and barrel `index.ts`.
-- Verify all existing commands work identically.
-
-**0b. Add structured result to CommandResult**
-- Add optional `data` and `status` fields to `CommandResult` in `@devalbo/shared`.
-- No existing command needs to change.
-
-**0c. Add typed accessor pattern for existing tables**
-- Create `packages/state/src/accessors/entries.ts` and `buffers.ts`.
-- Wrap `getRow`/`setRow`/`getTable` with Zod validation matching `FileTreeRow` and `EditorBufferRow`.
-- Export from `packages/state/src/index.ts`.
-- Add tests.
-
-**Exit criteria:**
-- Existing commands pass (manual smoke test or integration test).
-- Accessor roundtrip tests pass for entries and buffers.
-- Command file is split with no behavior change.
+- **0a. Split command file** — `index.tsx` split into `_util.tsx`, `filesystem.ts`, `system.ts`, `io.ts`, barrel `index.ts`. All existing commands preserved.
+- **0b. Structured result on CommandResult** — Added `data?: unknown` and `status?: 'ok' | 'error'` to `CommandResult`. Backward-compatible (both optional).
+- **0c. Typed accessors for entries/buffers** — Zod-validated `get`/`set`/`list`/`delete` accessors. Schemas in `packages/shared/src/schemas/`. 8 tests passing.
 
 ### Phase 1: Domain Model + State
 
@@ -434,17 +421,8 @@ Add Solid-compatible import/export.
 
 ## Concrete File Changes
 
-### Phase 0
-- `packages/shared/src/types/commands.ts` — add `data?` and `status?` to `CommandResult`
-- `packages/state/src/accessors/entries.ts` — new
-- `packages/state/src/accessors/buffers.ts` — new
-- `packages/state/src/accessors/index.ts` — new (barrel)
-- `packages/state/src/index.ts` — add accessor exports
-- `packages/state/tests/accessors.test.ts` — new
-- `naveditor-lib/src/commands/filesystem.ts` — new (moved from index.tsx)
-- `naveditor-lib/src/commands/system.ts` — new (moved from index.tsx)
-- `naveditor-lib/src/commands/io.ts` — new (moved from index.tsx)
-- `naveditor-lib/src/commands/index.ts` — rewrite as barrel
+### Phase 0 — COMPLETE
+All file changes delivered in commit `7bfa7c8`. See diff for details.
 
 ### Phase 1
 - `packages/shared/package.json` — add @inrupt/vocab-* deps
@@ -489,8 +467,8 @@ Add Solid-compatible import/export.
 | #2 `memberIdsJson` | Replaced with dedicated `memberships` table with scalar cells. |
 | #3 Overpromised compatibility | Reframed as JSON-LD boundary interop (like Solid itself). Full field mapping table provided. |
 | #4 Phase dependency problem | Phase 1 is domain model + state (testable without JSON-LD). Phase 3 adds JSON-LD mappers after the domain layer exists. |
-| #5 Command file growth | Phase 0 splits the file before any social commands are added. |
-| #6 Untestable commands | Phase 0 adds `data`/`status` fields to `CommandResult`. All new commands populate them. |
+| #5 Command file growth | **Done.** Phase 0 split the file into per-domain modules. |
+| #6 Untestable commands | **Done.** Phase 0 added `data`/`status` fields to `CommandResult`. All new commands will populate them. |
 | #7 Missing @inrupt deps | Explicit decision: use @inrupt packages. Added in Phase 1a. |
 | #8 No migration story | `schemaVersion` value in TinyBase Values. Checked on load. Defined in Phase 1c. |
 | #9 Premature package | No new package. Types in `@devalbo/shared`, accessors in `@devalbo/state`, commands in `naveditor-lib`. |
@@ -506,7 +484,7 @@ Add Solid-compatible import/export.
 | Multi-value fields (emails, phones) don't fit a single string cell | Data loss | Store as JSON-serialized array string when > 1 value; accessor handles parse/serialize transparently |
 | TinyBase cell value limit | Truncation | TinyBase has no hard limit on string cell size; not a real risk |
 | @inrupt packages add unwanted transitive deps | Bundle size | These packages are tiny constant-only modules; verify with `pnpm ls` after install |
-| Splitting the command file introduces regressions | Broken commands | This is a pure refactor — behavior is identical. Smoke test all commands. |
+| ~~Splitting the command file introduces regressions~~ | ~~Broken commands~~ | **Done.** Split completed, all tests green. |
 | Store schema version mismatch on upgrade | Silent data loss | `schemaVersion` value + load-time check prevents old code from overwriting new data |
 | JSON-LD roundtrip loses field ordering | Test flakiness | Compare semantically (deep equality on parsed objects), not by string comparison |
 
