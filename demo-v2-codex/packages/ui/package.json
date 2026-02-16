@@ -25,7 +25,7 @@
     "@types/react": "^19.2.14"
   },
   "peerDependencies": {
-    "ink": "^6.6.0",
-    "react": "^19.2.3"
+    "ink": "^6.7.0",
+    "react": "^19.2.4"
   }
 }
