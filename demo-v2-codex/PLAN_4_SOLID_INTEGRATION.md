@@ -59,6 +59,62 @@ This aligns with how Solid itself works: pods don't share internal storage forma
 
 ---
 
+## TinyBase Zod Schematizer
+
+TinyBase v7 provides `createZodSchematizer` from `tinybase/schematizers/schematizer-zod`. This is a conversion utility that derives TinyBase's native `TablesSchema` format from Zod object schemas, eliminating the need to manually duplicate cell name/type declarations in both Zod schemas and `setTablesSchema`.
+
+### How it works
+
+```ts
+import { createZodSchematizer } from 'tinybase/schematizers/schematizer-zod';
+
+const schematizer = createZodSchematizer(store);
+schematizer.setTablesSchema({
+  personas: PersonaRowSchema,
+  contacts: ContactRowSchema,
+  // ...
+});
+```
+
+The schematizer walks each Zod object schema and generates `{ type: 'string' | 'number' | 'boolean', default?: ... }` entries for each cell. It handles `.optional()` (generates a default of `''` for strings, `0` for numbers, `false` for booleans) and `.default(value)`.
+
+### What it preserves
+
+- Cell names and primitive types (`z.string()`, `z.number()`, `z.boolean()`)
+- Default values (`z.string().default('hello')`)
+- Nullable/optional handling (converts to TinyBase defaults)
+
+### What it loses (by design)
+
+- **Validation constraints**: `z.string().min(1)`, `.max()`, `.regex()`, `.email()` — all dropped. TinyBase does not do constraint validation; it only enforces type.
+- **Enums**: `z.enum(['organization', 'team', 'group'])` — **silently dropped**. The schematizer does not recognize enum schemas as string cells. This means `GroupTypeSchema` and `ContactKindSchema` need manual handling.
+- **Complex types**: unions, intersections, nested objects — silently dropped.
+
+This is acceptable because **Zod validation happens in the accessor layer**, not in TinyBase. TinyBase's schema is a type guard for cell storage, not a validation engine. The accessors call `Schema.parse()` on every write, which enforces all constraints. The schematizer simply eliminates the manual type mirroring.
+
+### Enum workaround
+
+For schemas containing enum fields (`kind`, `groupType`), the Zod schemas in `packages/shared/src/schemas/social.ts` should use `z.string()` at the TinyBase schema level and `z.enum()` at the accessor validation level — or more practically, the schemas can stay as-is (with `z.enum()`) and the enum fields can be patched into the schematizer output manually:
+
+```ts
+// Option A: patch after schematizer
+schematizer.setTablesSchema({ contacts: ContactRowSchema });
+// kind cell is missing because z.enum() was dropped — add it manually:
+// (TinyBase sees it as just a string cell anyway)
+
+// Option B (preferred): use a "store shape" variant of the schema
+// that replaces enums with z.string() for the schematizer, while the
+// accessor-layer schemas keep z.enum() for validation.
+```
+
+The preferred approach is documented in Phase 1c below.
+
+### Resolves the `optional` vs empty-string mismatch
+
+The Phase 1 draft uses `z.string().optional()` for optional cells, which types them as `string | undefined`. But TinyBase defaults missing string cells to `''` (empty string), so the runtime value is always `string`, never `undefined`. The schematizer makes this explicit: it converts `z.string().optional()` into `{ type: 'string', default: '' }`, which is exactly what TinyBase does. This means the "store shape" schemas should use `z.string().default('')` instead of `z.string().optional()` — or the accessor layer should treat `''` as equivalent to "not set" when reading rows back. Either way, the schematizer forces this decision to be made explicitly rather than leaving a type lie.
+
+---
+
 ## Store Schema Design
 
 ### Social tables
@@ -310,10 +366,12 @@ Add the social data model and store integration.
 - Create `packages/shared/src/schemas/social.ts` with Zod schemas for each row type.
 - Export from `packages/shared/src/index.ts`.
 
-**1c. Extend store schema**
-- Add `personas`, `contacts`, `groups`, `memberships` tables to `createDevalboStore` in `packages/state/src/store.ts`.
+**1c. Extend store schema (using Zod schematizer)**
+- Use `createZodSchematizer` from `tinybase/schematizers/schematizer-zod` to derive TinyBase table schemas from the Zod row schemas in `@devalbo/shared`, instead of manually duplicating cell declarations in `setTablesSchema`.
+- Create "store shape" variants of schemas that contain `z.enum()` fields (ContactRowSchema, GroupRowSchema) by replacing enums with `z.string()` for the schematizer. The accessor-layer schemas keep `z.enum()` for runtime validation. This handles the schematizer's enum blindspot.
 - Add table name constants in `packages/state/src/schemas/social.ts`.
 - Add `schemaVersion` to store values.
+- **Note:** The current `store.ts` manually declares all 40+ social cells in `setTablesSchema`. This should be replaced with schematizer calls to eliminate the duplication between Zod schemas and TinyBase schema declarations. The `entries` and `buffers` tables (which have no Zod schemas) can remain manually declared.
 
 **1d. Add typed accessors**
 - Create `packages/state/src/accessors/personas.ts`: `getPersona`, `setPersona`, `listPersonas`, `deletePersona`, `getDefaultPersona`, `setDefaultPersona`.
@@ -430,7 +488,7 @@ All file changes delivered in commit `7bfa7c8`. See diff for details.
 - `packages/shared/src/types/social.ts` — new
 - `packages/shared/src/schemas/social.ts` — new
 - `packages/shared/src/index.ts` — add exports
-- `packages/state/src/store.ts` — add social tables + schemaVersion
+- `packages/state/src/store.ts` — refactor to use `createZodSchematizer` for social tables + schemaVersion
 - `packages/state/src/schemas/social.ts` — new (table name constants)
 - `packages/state/src/accessors/personas.ts` — new
 - `packages/state/src/accessors/contacts.ts` — new
@@ -485,6 +543,7 @@ All file changes delivered in commit `7bfa7c8`. See diff for details.
 | TinyBase cell value limit | Truncation | TinyBase has no hard limit on string cell size; not a real risk |
 | @inrupt packages add unwanted transitive deps | Bundle size | These packages are tiny constant-only modules; verify with `pnpm ls` after install |
 | ~~Splitting the command file introduces regressions~~ | ~~Broken commands~~ | **Done.** Split completed, all tests green. |
+| Zod schematizer silently drops `z.enum()` fields | Missing cells in TinyBase schema | Use "store shape" schema variants with `z.string()` for enums; accessor-layer schemas keep `z.enum()` for validation |
 | Store schema version mismatch on upgrade | Silent data loss | `schemaVersion` value + load-time check prevents old code from overwriting new data |
 | JSON-LD roundtrip loses field ordering | Test flakiness | Compare semantically (deep equality on parsed objects), not by string comparison |
 

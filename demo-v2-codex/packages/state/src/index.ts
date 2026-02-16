@@ -1,6 +1,7 @@
 export * from './store';
 export * from './schemas/file-tree';
 export * from './schemas/editor-buffer';
+export * from './schemas/social';
 export * from './accessors';
 export * from './persisters/memory';
 export * from './persisters/sqlite-browser';

@@ -16,6 +16,8 @@
     "test": "echo 'no tests'"
   },
   "dependencies": {
+    "@inrupt/vocab-common-rdf": "^1.0.5",
+    "@inrupt/vocab-solid-common": "^0.7.5",
     "effect": "^3.19.17",
     "zod": "^4.3.6"
   },
