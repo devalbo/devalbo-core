@@ -4,6 +4,15 @@ These four items come from the "What needs attention before adding scope" sectio
 
 ---
 
+## Implementation Status (2026-02-16)
+
+- Item 1 (`naveditor-lib` command split): implemented.
+- Item 2 (`CommandResult` optional structured fields): implemented.
+- Item 3 (typed accessors for `entries` and `buffers`): implemented, including tests.
+- Item 4 (schema vs JSON-LD storage decision): documentation-only, no code changes required.
+
+---
+
 ## 1. Split the command file
 
 **Problem:** `naveditor-lib/src/commands/index.tsx` is 456 lines containing every command handler in a flat map. Adding social commands here would push it past 1000 lines.
