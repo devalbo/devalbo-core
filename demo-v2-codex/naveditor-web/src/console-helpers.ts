@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
 import { commands, type CommandName } from '@/commands';
+import { createDevalboStore } from '@devalbo/state';
+
+const store = createDevalboStore();
 
 function extractText(node: ReactNode): string {
   if (node == null) return '';
@@ -18,7 +21,7 @@ async function exec(commandName: string, args: string[] = [], cwd = '/') {
     throw new Error(`Command not found: ${commandName}`);
   }
 
-  const result = await command(args, { cwd });
+  const result = await command(args, { cwd, store });
   const text = extractText(result.component);
   if (text) {
     console.log(`\n${text}\n`);

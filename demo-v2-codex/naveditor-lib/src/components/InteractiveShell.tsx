@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Box, Text } from 'ink';
 import { TextInput } from '@devalbo/ui';
 import { commands, type CommandName } from '@/commands';
 import { BrowserShellProvider } from './BrowserShellProvider';
 import { TerminalShellProvider } from './TerminalShellProvider';
 import { detectPlatform, RuntimePlatform } from '@devalbo/shared';
+import { createDevalboStore, type DevalboStore } from '@devalbo/state';
 
 interface CommandOutput {
   command: string;
   component?: React.ReactNode;
 }
 
-function ShellContent({ runtime }: { runtime: 'browser' | 'terminal' }) {
+function ShellContent({ runtime, store }: { runtime: 'browser' | 'terminal'; store: DevalboStore }) {
   const [input, setInput] = useState('');
   const [inputKey, setInputKey] = useState(0);
   const [cwd, setCwd] = useState(() => {
@@ -59,7 +60,8 @@ function ShellContent({ runtime }: { runtime: 'browser' | 'terminal' }) {
     };
 
     const result = await command(args, {
-      ...commandOptions
+      ...commandOptions,
+      store
     });
 
     if (commandName !== 'clear') {
@@ -92,18 +94,23 @@ function ShellContent({ runtime }: { runtime: 'browser' | 'terminal' }) {
   );
 }
 
-export const InteractiveShell: React.FC<{ runtime?: 'browser' | 'terminal' }> = ({ runtime = 'browser' }) => {
+export const InteractiveShell: React.FC<{ runtime?: 'browser' | 'terminal'; store?: DevalboStore }> = ({
+  runtime = 'browser',
+  store
+}) => {
+  const shellStore = useMemo(() => store ?? createDevalboStore(), [store]);
+
   if (runtime === 'terminal') {
     return (
       <TerminalShellProvider>
-        <ShellContent runtime="terminal" />
+        <ShellContent runtime="terminal" store={shellStore} />
       </TerminalShellProvider>
     );
   }
 
   return (
     <BrowserShellProvider>
-      <ShellContent runtime="browser" />
+      <ShellContent runtime="browser" store={shellStore} />
     </BrowserShellProvider>
   );
 };

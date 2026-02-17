@@ -22,6 +22,8 @@ catalog:
   '@tauri-apps/api': ^2.10.1
   
   '@inkjs/ui': ^2.0.0
+  '@inrupt/vocab-common-rdf': ^1.0.5
+  '@inrupt/vocab-solid-common': ^0.7.5
 
   # Dev dependencies
   '@types/node': ^25.2.3

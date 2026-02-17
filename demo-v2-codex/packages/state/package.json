@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "type-check": "tsc -p tsconfig.json --noEmit",
-    "test": "echo 'no tests'"
+    "test": "vitest run tests"
   },
   "dependencies": {
     "@devalbo/shared": "workspace:*",
@@ -22,5 +22,8 @@
   },
   "peerDependencies": {
     "react": "catalog:"
+  },
+  "devDependencies": {
+    "vitest": "catalog:"
   }
 }

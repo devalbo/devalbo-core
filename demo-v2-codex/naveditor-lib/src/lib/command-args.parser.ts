@@ -19,6 +19,10 @@ import {
   type MvArgsInput,
   RmArgsSchema,
   type RmArgsInput,
+  SolidExportArgsSchema,
+  type SolidExportArgsInput,
+  SolidImportArgsSchema,
+  type SolidImportArgsInput,
   StatArgsSchema,
   type StatArgsInput,
   TouchArgsSchema,
@@ -83,6 +87,14 @@ const exportParser = object({
   outputPath: optional(argument(string()))
 } satisfies ParserShapeFor<ExportArgsInput>);
 
+const solidExportParser = object({
+  outputPath: optional(argument(string()))
+} satisfies ParserShapeFor<SolidExportArgsInput>);
+
+const solidImportParser = object({
+  filePath: argument(string())
+} satisfies ParserShapeFor<SolidImportArgsInput>);
+
 export type CpArgs = CpArgsInput;
 export type CdArgs = CdArgsInput;
 export type LsArgs = LsArgsInput;
@@ -95,6 +107,8 @@ export type RmArgs = RmArgsInput;
 export type MvArgs = MvArgsInput;
 export type ImportArgs = ImportArgsInput;
 export type ExportArgs = ExportArgsInput;
+export type SolidExportArgs = SolidExportArgsInput;
+export type SolidImportArgs = SolidImportArgsInput;
 
 type ParseResult<T> = {
   success: true;
@@ -161,3 +175,9 @@ export const parseImportArgs = (args: string[]): ParseResult<ImportArgs> =>
 
 export const parseExportArgs = (args: string[]): ParseResult<ExportArgs> =>
   parseWithSchema(exportParser, args, ExportArgsSchema);
+
+export const parseSolidExportArgs = (args: string[]): ParseResult<SolidExportArgs> =>
+  parseWithSchema(solidExportParser, args, SolidExportArgsSchema);
+
+export const parseSolidImportArgs = (args: string[]): ParseResult<SolidImportArgs> =>
+  parseWithSchema(solidImportParser, args, SolidImportArgsSchema);

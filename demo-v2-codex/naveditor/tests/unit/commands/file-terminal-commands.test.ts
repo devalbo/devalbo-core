@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { RuntimePlatform } from '@devalbo/shared';
 import * as shared from '@devalbo/shared';
+import { createDevalboStore } from '@devalbo/state';
 import { commands } from '@/commands';
 
 function extractText(node: ReactNode): string {
@@ -20,8 +21,10 @@ function extractText(node: ReactNode): string {
 
 describe('file terminal commands', () => {
   let workspace = '';
+  let store = createDevalboStore();
 
   beforeEach(async () => {
+    store = createDevalboStore();
     workspace = await mkdtemp(path.join(os.tmpdir(), 'naveditor-cmds-'));
     await mkdir(path.join(workspace, 'docs'));
     await writeFile(path.join(workspace, 'docs', 'hello.txt'), 'Hello, World!\n', 'utf8');
@@ -34,7 +37,7 @@ describe('file terminal commands', () => {
   });
 
   it('pwd prints current directory', async () => {
-    const result = await commands.pwd([], { cwd: workspace });
+    const result = await commands.pwd([], { cwd: workspace, store });
     expect(extractText(result.component)).toContain(workspace);
   });
 
@@ -42,6 +45,7 @@ describe('file terminal commands', () => {
     let cwd = workspace;
     const result = await commands.cd(['docs'], {
       cwd,
+      store,
       setCwd: (next) => {
         cwd = next;
       }
@@ -52,7 +56,7 @@ describe('file terminal commands', () => {
   });
 
   it('ls lists directory contents', async () => {
-    const result = await commands.ls(['docs'], { cwd: workspace });
+    const result = await commands.ls(['docs'], { cwd: workspace, store });
     expect(extractText(result.component)).toContain('hello.txt');
   });
 
@@ -60,7 +64,7 @@ describe('file terminal commands', () => {
     await mkdir(path.join(workspace, 'docs', 'nested'));
     await writeFile(path.join(workspace, 'docs', 'nested', 'a.txt'), 'a', 'utf8');
 
-    const result = await commands.tree(['docs'], { cwd: workspace });
+    const result = await commands.tree(['docs'], { cwd: workspace, store });
     const text = extractText(result.component);
     expect(text).toContain('docs/');
     expect(text).toContain('nested/');
@@ -68,7 +72,7 @@ describe('file terminal commands', () => {
   });
 
   it('stat prints path metadata', async () => {
-    const result = await commands.stat(['docs/hello.txt'], { cwd: workspace });
+    const result = await commands.stat(['docs/hello.txt'], { cwd: workspace, store });
     const text = extractText(result.component);
     expect(text).toContain('Name: hello.txt');
     expect(text).toContain('Type: file');
@@ -76,19 +80,19 @@ describe('file terminal commands', () => {
 
   it('clear calls clearScreen callback', async () => {
     const clearScreen = vi.fn();
-    const result = await commands.clear([], { cwd: workspace, clearScreen });
+    const result = await commands.clear([], { cwd: workspace, clearScreen, store });
     expect(result.error).toBeUndefined();
     expect(clearScreen).toHaveBeenCalledTimes(1);
   });
 
   it('cat prints file contents', async () => {
-    const result = await commands.cat(['docs/hello.txt'], { cwd: workspace });
+    const result = await commands.cat(['docs/hello.txt'], { cwd: workspace, store });
     expect(extractText(result.component)).toContain('Hello, World!');
   });
 
   it('touch creates a file', async () => {
     const target = path.join(workspace, 'docs', 'new.txt');
-    const result = await commands.touch(['docs/new.txt'], { cwd: workspace });
+    const result = await commands.touch(['docs/new.txt'], { cwd: workspace, store });
 
     expect(result.error).toBeUndefined();
     const content = await readFile(target, 'utf8');
@@ -97,16 +101,16 @@ describe('file terminal commands', () => {
 
   it('mkdir creates a directory', async () => {
     const target = path.join(workspace, 'docs', 'created');
-    const result = await commands.mkdir(['docs/created'], { cwd: workspace });
+    const result = await commands.mkdir(['docs/created'], { cwd: workspace, store });
 
     expect(result.error).toBeUndefined();
-    const statResult = await commands.stat(['docs/created'], { cwd: workspace });
+    const statResult = await commands.stat(['docs/created'], { cwd: workspace, store });
     expect(extractText(statResult.component)).toContain('Type: directory');
     expect(extractText(result.component)).toContain(target);
   });
 
   it('cp copies file', async () => {
-    const result = await commands.cp(['docs/hello.txt', 'docs/copied.txt'], { cwd: workspace });
+    const result = await commands.cp(['docs/hello.txt', 'docs/copied.txt'], { cwd: workspace, store });
     expect(result.error).toBeUndefined();
     const copied = await readFile(path.join(workspace, 'docs', 'copied.txt'), 'utf8');
     expect(copied).toContain('Hello, World!');
@@ -115,7 +119,7 @@ describe('file terminal commands', () => {
   it('mv moves file', async () => {
     const source = path.join(workspace, 'docs', 'hello.txt');
     const dest = path.join(workspace, 'docs', 'moved.txt');
-    const result = await commands.mv(['docs/hello.txt', 'docs/moved.txt'], { cwd: workspace });
+    const result = await commands.mv(['docs/hello.txt', 'docs/moved.txt'], { cwd: workspace, store });
 
     expect(result.error).toBeUndefined();
     const moved = await readFile(dest, 'utf8');
@@ -125,14 +129,14 @@ describe('file terminal commands', () => {
 
   it('rm removes file', async () => {
     const target = path.join(workspace, 'docs', 'hello.txt');
-    const result = await commands.rm(['docs/hello.txt'], { cwd: workspace });
+    const result = await commands.rm(['docs/hello.txt'], { cwd: workspace, store });
 
     expect(result.error).toBeUndefined();
     await expect(readFile(target, 'utf8')).rejects.toThrow();
   });
 
   it('backend shows active filesystem adapter', async () => {
-    const result = await commands.backend([], { cwd: workspace });
+    const result = await commands.backend([], { cwd: workspace, store });
     const text = extractText(result.component);
     expect(result.error).toBeUndefined();
     expect(text).toContain('Platform: nodejs');
@@ -141,7 +145,7 @@ describe('file terminal commands', () => {
 
   it('exit triggers terminal exit callback', async () => {
     const exit = vi.fn();
-    const result = await commands.exit([], { cwd: workspace, exit });
+    const result = await commands.exit([], { cwd: workspace, exit, store });
     expect(result.error).toBeUndefined();
     expect(exit).toHaveBeenCalledTimes(1);
   });
@@ -153,12 +157,12 @@ describe('file terminal commands', () => {
     await writeFile(path.join(sourceDir, 'blob.bin'), Buffer.from([0, 1, 2, 255]));
 
     const bundlePath = path.join(workspace, 'snapshot.bft');
-    const exportResult = await commands['export'](['project', 'snapshot.bft'], { cwd: workspace });
+    const exportResult = await commands['export'](['project', 'snapshot.bft'], { cwd: workspace, store });
     expect(exportResult.error).toBeUndefined();
     const bundleText = await readFile(bundlePath, 'utf8');
     expect(bundleText).toContain('\"type\": \"directory\"');
 
-    const importResult = await commands['import'](['snapshot.bft', 'restored'], { cwd: workspace });
+    const importResult = await commands['import'](['snapshot.bft', 'restored'], { cwd: workspace, store });
     expect(importResult.error).toBeUndefined();
 
     const restoredText = await readFile(path.join(workspace, 'restored', 'hello.txt'), 'utf8');
@@ -171,7 +175,7 @@ describe('file terminal commands', () => {
     const sourceDir = path.join(workspace, 'project');
     await mkdir(sourceDir);
     await writeFile(path.join(sourceDir, 'hello.txt'), 'Hello Picker\\n', 'utf8');
-    await commands['export'](['project', 'snapshot.bft'], { cwd: workspace });
+    await commands['export'](['project', 'snapshot.bft'], { cwd: workspace, store });
     const bundleText = await readFile(path.join(workspace, 'snapshot.bft'), 'utf8');
 
     const detectSpy = vi.spyOn(shared, 'detectPlatform').mockReturnValue({
@@ -201,7 +205,7 @@ describe('file terminal commands', () => {
     } as unknown as Document;
 
     try {
-      const result = await commands['import'](['picked'], { cwd: workspace });
+      const result = await commands['import'](['picked'], { cwd: workspace, store });
       expect(result.error).toBeUndefined();
       const restoredText = await readFile(path.join(workspace, 'picked', 'hello.txt'), 'utf8');
       expect(restoredText).toBe('Hello Picker\\n');
@@ -256,7 +260,7 @@ describe('file terminal commands', () => {
     URL.revokeObjectURL = revokeObjectURL as unknown as typeof URL.revokeObjectURL;
 
     try {
-      const result = await commands['export'](['project'], { cwd: workspace });
+      const result = await commands['export'](['project'], { cwd: workspace, store });
       expect(result.error).toBeUndefined();
       expect(extractText(result.component)).toContain('Downloaded project.bft.json');
       expect(createElement).toHaveBeenCalledWith('a');

@@ -55,10 +55,20 @@ export const ExportArgsSchema = z.object({
   outputPath: PathTokenSchema.optional()
 });
 
+export const SolidExportArgsSchema = z.object({
+  outputPath: PathTokenSchema.optional()
+});
+
+export const SolidImportArgsSchema = z.object({
+  filePath: PathTokenSchema
+});
+
 export type CpArgsInput = z.infer<typeof CpArgsSchema>;
 export type MvArgsInput = z.infer<typeof MvArgsSchema>;
 export type ImportArgsInput = z.infer<typeof ImportArgsSchema>;
 export type ExportArgsInput = z.infer<typeof ExportArgsSchema>;
+export type SolidExportArgsInput = z.infer<typeof SolidExportArgsSchema>;
+export type SolidImportArgsInput = z.infer<typeof SolidImportArgsSchema>;
 export type CdArgsInput = z.infer<typeof CdArgsSchema>;
 export type LsArgsInput = z.infer<typeof LsArgsSchema>;
 export type TreeArgsInput = z.infer<typeof TreeArgsSchema>;

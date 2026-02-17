@@ -17,8 +17,8 @@
   },
   "dependencies": {
     "@devalbo/branded-types": "workspace:*",
-    "@inrupt/vocab-common-rdf": "^1.0.5",
-    "@inrupt/vocab-solid-common": "^0.7.5",
+    "@inrupt/vocab-common-rdf": "catalog:",
+    "@inrupt/vocab-solid-common": "catalog:",
     "effect": "catalog:",
     "zod": "catalog:"
   },

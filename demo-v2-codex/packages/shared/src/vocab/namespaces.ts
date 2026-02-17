@@ -38,7 +38,8 @@ export const NS = {
   xsd: 'http://www.w3.org/2001/XMLSchema#',
   schema: 'https://schema.org/',
   cert: 'http://www.w3.org/ns/auth/cert#',
-  time: 'http://www.w3.org/2006/time#'
+  time: 'http://www.w3.org/2006/time#',
+  pim: 'http://www.w3.org/ns/pim/space#'
 } as const;
 
 export const POD_CONTEXT = {
@@ -53,5 +54,7 @@ export const POD_CONTEXT = {
   posix: NS.posix,
   xsd: NS.xsd,
   schema: NS.schema,
-  cert: NS.cert
+  cert: NS.cert,
+  time: NS.time,
+  pim: NS.pim
 } as const;

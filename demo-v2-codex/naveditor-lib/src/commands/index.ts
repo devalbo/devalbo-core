@@ -1,17 +1,21 @@
-import type { AsyncCommandHandler } from './_util';
+import type { CommandHandler, ExtendedCommandOptions } from './_util';
 import { filesystemCommands } from './filesystem';
 import { ioCommands } from './io';
 import { systemCommands } from './system';
+import { personaCommand } from './persona';
+import { contactCommand } from './contact';
+import { groupCommand } from './group';
 
 type CoreCommandName =
   | keyof typeof filesystemCommands
   | keyof typeof systemCommands
   | keyof typeof ioCommands;
 
+type SocialCommandName = 'persona' | 'contact' | 'group';
 type AliasCommandName = 'navigate' | 'edit';
-export type CommandName = CoreCommandName | AliasCommandName;
+export type CommandName = CoreCommandName | SocialCommandName | AliasCommandName;
 
-type CommandMap = Record<CommandName, AsyncCommandHandler>;
+type CommandMap = Record<CommandName, CommandHandler>;
 
 const baseCommands = {
   ...filesystemCommands,
@@ -21,6 +25,9 @@ const baseCommands = {
 
 export const commands: CommandMap = {
   ...baseCommands,
-  navigate: async (args, options) => filesystemCommands.ls(args, options),
-  edit: async (args, options) => filesystemCommands.cat(args, options)
+  persona: personaCommand,
+  contact: contactCommand,
+  group: groupCommand,
+  navigate: async (args: string[], options?: ExtendedCommandOptions) => filesystemCommands.ls(args, options),
+  edit: async (args: string[], options?: ExtendedCommandOptions) => filesystemCommands.cat(args, options)
 };

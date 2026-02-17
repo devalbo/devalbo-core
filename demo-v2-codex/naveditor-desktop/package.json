@@ -11,9 +11,9 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@devalbo/naveditor-lib": "workspace:*",
     "@devalbo/commands": "workspace:*",
     "@devalbo/filesystem": "workspace:*",
+    "@devalbo/naveditor-lib": "workspace:*",
     "@devalbo/shared": "workspace:*",
     "@devalbo/state": "workspace:*",
     "@devalbo/ui": "workspace:*",
@@ -29,7 +29,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.8.4",
+    "@tauri-apps/cli": "^2.10.0",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

@@ -3,6 +3,7 @@ export * from './schemas/file-tree';
 export * from './schemas/editor-buffer';
 export * from './schemas/social';
 export * from './accessors';
+export * from './mappers';
 export * from './persisters/memory';
 export * from './persisters/sqlite-browser';
 export * from './persisters/sqlite-node';

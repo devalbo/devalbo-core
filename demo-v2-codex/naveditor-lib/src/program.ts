@@ -2,6 +2,7 @@ import { Command } from 'commander';
 
 export function createProgram() {
   const program = new Command();
+  const collect = (value: string, previous: string[]) => [...previous, value];
 
   program
     .name('naveditor')
@@ -27,8 +28,31 @@ export function createProgram() {
     .description('Import BFT JSON (browser/Tauri picks a file when no bftFile is provided)')
     .argument('[bftFile]', 'BFT file path')
     .argument('[location]', 'Target directory name/path');
+  program
+    .command('solid-export')
+    .description('Export social entities as a Solid JSON-LD bundle')
+    .argument('[output]', 'Output JSON file path', 'social-data.json');
+  program
+    .command('solid-import')
+    .description('Import social entities from a Solid JSON-LD bundle file')
+    .argument('<file>', 'Solid JSON-LD bundle file path');
   program.command('exit').description('Exit interactive terminal session');
   program.command('interactive').description('Start interactive terminal session');
+  program
+    .command('persona')
+    .description('Manage personas (list, create, show, edit, delete, set-default)')
+    .argument('<subcommand>')
+    .argument('[args...]', '', collect, []);
+  program
+    .command('contact')
+    .description('Manage contacts (list, add, show, edit, delete, search, link)')
+    .argument('<subcommand>')
+    .argument('[args...]', '', collect, []);
+  program
+    .command('group')
+    .description('Manage groups (list, create, show, edit, delete, add-member, remove-member, list-members)')
+    .argument('<subcommand>')
+    .argument('[args...]', '', collect, []);
 
   program
     .command('help')

@@ -1,10 +1,18 @@
 import { z } from 'zod';
-import type { Branded } from '@devalbo/branded-types';
+import {
+  createBrandedUuidToolbox,
+  IdTypePrefixBrandSchema,
+  type Branded
+} from '@devalbo/branded-types';
 
 export type { Branded };
 
 export type FilePath = Branded<string, 'FilePath'>;
 export type DirectoryPath = Branded<string, 'DirectoryPath'>;
+export type PersonaId = Branded<string, 'PersonaId'>;
+export type ContactId = Branded<string, 'ContactId'>;
+export type GroupId = Branded<string, 'GroupId'>;
+export type MembershipId = Branded<string, 'MembershipId'>;
 
 export const FilePathSchema = z.string().trim().min(1, 'path is required').transform((path) => path as FilePath);
 export const DirectoryPathSchema = z
@@ -22,6 +30,35 @@ export const assertDirectoryPath = (path: string): DirectoryPath => DirectoryPat
 
 export const unsafeAsFilePath = (path: string): FilePath => path as FilePath;
 export const unsafeAsDirectoryPath = (path: string): DirectoryPath => path as DirectoryPath;
+export const unsafeAsPersonaId = (id: string): PersonaId => id as PersonaId;
+export const unsafeAsContactId = (id: string): ContactId => id as ContactId;
+export const unsafeAsGroupId = (id: string): GroupId => id as GroupId;
+export const unsafeAsMembershipId = (id: string): MembershipId => id as MembershipId;
+
+const PERSONA_PREFIX = IdTypePrefixBrandSchema.parse('persona');
+const CONTACT_PREFIX = IdTypePrefixBrandSchema.parse('contact');
+const GROUP_PREFIX = IdTypePrefixBrandSchema.parse('group');
+const MEMBERSHIP_PREFIX = IdTypePrefixBrandSchema.parse('membership');
+
+export const PersonaIdToolbox = createBrandedUuidToolbox(PERSONA_PREFIX, '_');
+export const ContactIdToolbox = createBrandedUuidToolbox(CONTACT_PREFIX, '_');
+export const GroupIdToolbox = createBrandedUuidToolbox(GROUP_PREFIX, '_');
+export const MembershipIdToolbox = createBrandedUuidToolbox(MEMBERSHIP_PREFIX, '_');
+
+export const parsePersonaId = (id: string): z.ZodSafeParseResult<PersonaId> =>
+  PersonaIdToolbox.parseId(id) as unknown as z.ZodSafeParseResult<PersonaId>;
+export const parseContactId = (id: string): z.ZodSafeParseResult<ContactId> =>
+  ContactIdToolbox.parseId(id) as unknown as z.ZodSafeParseResult<ContactId>;
+export const parseGroupId = (id: string): z.ZodSafeParseResult<GroupId> =>
+  GroupIdToolbox.parseId(id) as unknown as z.ZodSafeParseResult<GroupId>;
+export const parseMembershipId = (id: string): z.ZodSafeParseResult<MembershipId> =>
+  MembershipIdToolbox.parseId(id) as unknown as z.ZodSafeParseResult<MembershipId>;
+
+export const assertPersonaId = (id: string): PersonaId => PersonaIdToolbox.assertId(id) as unknown as PersonaId;
+export const assertContactId = (id: string): ContactId => ContactIdToolbox.assertId(id) as unknown as ContactId;
+export const assertGroupId = (id: string): GroupId => GroupIdToolbox.assertId(id) as unknown as GroupId;
+export const assertMembershipId = (id: string): MembershipId =>
+  MembershipIdToolbox.assertId(id) as unknown as MembershipId;
 
 /** @deprecated Use `unsafeAsFilePath` for trusted data or `parseFilePath`/`assertFilePath` for untrusted data. */
 export const asFilePath = unsafeAsFilePath;
