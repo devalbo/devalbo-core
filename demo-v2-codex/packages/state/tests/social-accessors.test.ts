@@ -28,6 +28,7 @@ import {
   setPersona
 } from '../src/accessors';
 import {
+  ACTIVITIES_TABLE,
   CONTACTS_TABLE,
   CURRENT_SCHEMA_VERSION,
   DEFAULT_PERSONA_ID_VALUE,
@@ -60,6 +61,7 @@ describe('social accessors', () => {
     expect(store.hasTable(CONTACTS_TABLE)).toBe(false);
     expect(store.hasTable(GROUPS_TABLE)).toBe(false);
     expect(store.hasTable(MEMBERSHIPS_TABLE)).toBe(false);
+    expect(store.hasTable(ACTIVITIES_TABLE)).toBe(false);
     expect(store.getValue(SCHEMA_VERSION_VALUE)).toBe(CURRENT_SCHEMA_VERSION);
   });
 

@@ -1,6 +1,7 @@
 import { createStore, type Store } from 'tinybase';
 import { createZodSchematizer } from 'tinybase/schematizers/schematizer-zod';
 import {
+  ActivityRowStoreSchema,
   ContactRowStoreSchema,
   GroupRowStoreSchema,
   MembershipRowStoreSchema,
@@ -11,6 +12,7 @@ import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_PERSONA_ID_VALUE,
   GROUPS_TABLE,
+  ACTIVITIES_TABLE,
   MEMBERSHIPS_TABLE,
   PERSONAS_TABLE,
   SCHEMA_VERSION_VALUE
@@ -24,7 +26,8 @@ export const createDevalboStore = (): Store => {
     [PERSONAS_TABLE]: PersonaRowStoreSchema,
     [CONTACTS_TABLE]: ContactRowStoreSchema,
     [GROUPS_TABLE]: GroupRowStoreSchema,
-    [MEMBERSHIPS_TABLE]: MembershipRowStoreSchema
+    [MEMBERSHIPS_TABLE]: MembershipRowStoreSchema,
+    [ACTIVITIES_TABLE]: ActivityRowStoreSchema
   });
 
   store.setTablesSchema({

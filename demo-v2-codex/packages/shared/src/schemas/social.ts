@@ -61,6 +61,18 @@ export const MembershipRowSchema = z.object({
   endDate: optionalStringCell
 });
 
+export const ActivitySubjectTypeSchema = z.enum(['contact', 'group']);
+export const ActivityTypeSchema = z.enum(['share-card', 'share-file', 'share-link', 'invite', 'note']);
+
+export const ActivityRowSchema = z.object({
+  actorPersonaId: z.string().min(1),
+  subjectType: ActivitySubjectTypeSchema,
+  subjectId: z.string().min(1),
+  activityType: ActivityTypeSchema,
+  payload: z.string(),
+  timestamp: z.string()
+});
+
 // Schematizer-friendly schemas (enum cells must be relaxed to string).
 export const PersonaRowStoreSchema = PersonaRowSchema;
 export const ContactRowStoreSchema = ContactRowSchema.extend({
@@ -70,3 +82,7 @@ export const GroupRowStoreSchema = GroupRowSchema.extend({
   groupType: z.string()
 });
 export const MembershipRowStoreSchema = MembershipRowSchema;
+export const ActivityRowStoreSchema = ActivityRowSchema.extend({
+  subjectType: z.string(),
+  activityType: z.string()
+});

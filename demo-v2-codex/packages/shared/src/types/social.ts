@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  ActivityRowSchema,
   ContactKindSchema,
   ContactRowSchema,
   GroupRowSchema,
@@ -15,8 +16,10 @@ export type PersonaRow = z.output<typeof PersonaRowSchema>;
 export type ContactRow = z.output<typeof ContactRowSchema>;
 export type GroupRow = z.output<typeof GroupRowSchema>;
 export type MembershipRow = z.output<typeof MembershipRowSchema>;
+export type ActivityRow = z.output<typeof ActivityRowSchema>;
 
 export type PersonaRowInput = z.input<typeof PersonaRowSchema>;
 export type ContactRowInput = z.input<typeof ContactRowSchema>;
 export type GroupRowInput = z.input<typeof GroupRowSchema>;
 export type MembershipRowInput = z.input<typeof MembershipRowSchema>;
+export type ActivityRowInput = z.input<typeof ActivityRowSchema>;
