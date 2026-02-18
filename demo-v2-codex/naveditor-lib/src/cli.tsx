@@ -1,4 +1,3 @@
-import React from 'react';
 import { render } from 'ink';
 import { createProgram } from './program';
 import { commands, type CommandName } from './commands';

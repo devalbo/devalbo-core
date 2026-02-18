@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Box, Text } from 'ink';
 import { TextInput } from '@devalbo/ui';
 import { commands, type CommandName } from '@/commands';
@@ -9,7 +9,7 @@ import { createDevalboStore, type DevalboStore } from '@devalbo/state';
 
 interface CommandOutput {
   command: string;
-  component?: React.ReactNode;
+  component?: ReactNode;
 }
 
 function ShellContent({ runtime, store }: { runtime: 'browser' | 'terminal'; store: DevalboStore }) {

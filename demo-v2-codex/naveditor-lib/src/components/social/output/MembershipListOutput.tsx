@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Text } from 'ink';
 import type { GroupId, MembershipId, MembershipRow } from '@devalbo/shared';
 

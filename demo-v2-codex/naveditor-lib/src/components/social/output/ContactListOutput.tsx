@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Text } from 'ink';
 import type { ContactId, ContactRow } from '@devalbo/shared';
 

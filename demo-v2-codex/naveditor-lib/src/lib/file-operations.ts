@@ -1,7 +1,6 @@
 import {
   createFilesystemDriver,
   createWatcherService,
-  FS_STORAGE_KEY,
   getFilesystemBackendInfo as getFilesystemBackendInfoFromDriver,
   type FilesystemBackendInfo,
   type IFilesystemDriver,
@@ -10,7 +9,7 @@ import {
 
 let driverPromise: Promise<IFilesystemDriver> | undefined;
 
-export { FS_STORAGE_KEY };
+export { FS_STORAGE_KEY } from '@devalbo/filesystem';
 
 export const getDriver = async (): Promise<IFilesystemDriver> => {
   if (!driverPromise) {

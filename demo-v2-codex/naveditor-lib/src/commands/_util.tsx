@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Text } from 'ink';
 import type { CommandOptions, CommandResult } from '@devalbo/shared';
 import type { Store } from 'tinybase';
