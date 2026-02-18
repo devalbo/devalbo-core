@@ -244,12 +244,15 @@ homepage: valueAsNodeId(get(jsonLd, 'foaf:homepage', FOAF.homepage)),
 
 #### New: `naveditor-lib/src/commands/solid.ts`
 
+Note: this is a `.ts` file (not `.tsx`), so JSX is not available. Use `createElement` from `react` exactly as `persona.ts` does.
+
 ```ts
+import { createElement } from 'react';
 import { fetchWebIdProfile } from '@devalbo/solid-client';
 import { parseSolidFetchProfileArgs } from '@/lib/command-args.parser';
 import type { AsyncCommandHandler } from './_util';
 import { makeResultError, makeResult } from './_util';
-import { SolidProfileOutput } from '@/components/output/SolidProfileOutput';
+import { SolidProfileOutput } from '@/components/social/output/SolidProfileOutput';
 
 export const solidCommands: Record<'solid-fetch-profile', AsyncCommandHandler> = {
   'solid-fetch-profile': async (args) => {
@@ -263,17 +266,41 @@ export const solidCommands: Record<'solid-fetch-profile', AsyncCommandHandler> =
       return makeResultError(result.error);
     }
 
-    return makeResult(`Profile fetched for ${result.row.name}`, {
-      component: SolidProfileOutput,
-      props: { id: result.id, row: result.row },
-    });
+    return {
+      ...makeResult(`Profile fetched for ${result.row.name}`, { id: result.id, row: result.row }),
+      component: createElement(SolidProfileOutput, { id: result.id, row: result.row }),
+    };
   },
 };
 ```
 
+The `{ ...makeResult(...), component: createElement(...) }` spread pattern is the established convention (see `persona.ts` lines 63-65, 99-102, 116-118).
+
 #### Modified: `naveditor-lib/src/commands/index.ts`
 
-Merge `solidCommands` into the command registry alongside `ioCommands`.
+Add `solidCommands` to the registry. The `CommandName` union is derived via `keyof typeof`, so adding a new record type automatically extends it. Concrete changes:
+
+```ts
+// Add import:
+import { solidCommands } from './solid';
+
+// Add to CoreCommandName union:
+type CoreCommandName =
+  | keyof typeof filesystemCommands
+  | keyof typeof systemCommands
+  | keyof typeof ioCommands
+  | keyof typeof solidCommands;   // ← add this line
+
+// Add to baseCommands spread:
+const baseCommands = {
+  ...filesystemCommands,
+  ...systemCommands,
+  ...ioCommands,
+  ...solidCommands,               // ← add this line
+} as const;
+```
+
+`solid-fetch-profile` contains a hyphen, which is a valid TypeScript string key and already used by the existing `solid-export` / `solid-import` commands in `ioCommands`.
 
 #### Modified: `naveditor-lib/src/lib/command-args.parser.ts`
 
@@ -292,28 +319,31 @@ export const parseSolidFetchProfileArgs = (
 };
 ```
 
-#### New: `naveditor-lib/src/components/output/SolidProfileOutput.tsx`
+#### New: `naveditor-lib/src/components/social/output/SolidProfileOutput.tsx`
 
-Read-only display component following Solid UI Principle 6 (props-in, events-out, no store access):
+Placed alongside the other social output components (`PersonaDetailOutput.tsx`, `ContactDetailOutput.tsx`, etc.). Uses `Box`/`Text` from `ink` — the same pattern as every other output component. Ink-web renders these to the DOM in browser/desktop contexts.
 
 ```tsx
-import type { PersonaId, PersonaRowInput } from '@devalbo/shared';
+import { Box, Text } from 'ink';
+import type { PersonaId, PersonaRow, PersonaRowInput } from '@devalbo/shared';
 
 interface SolidProfileOutputProps {
   id: PersonaId;
-  row: PersonaRowInput;
+  row: PersonaRow | PersonaRowInput;
 }
 
-export const SolidProfileOutput = (props: SolidProfileOutputProps) => (
-  <div class="solid-profile-output">
-    <div class="solid-profile-output__name">{props.row.name}</div>
-    {props.row.email && <div class="solid-profile-output__field">Email: {props.row.email}</div>}
-    {props.id && <div class="solid-profile-output__field">WebID: <code>{props.id}</code></div>}
-    {props.row.oidcIssuer && <div class="solid-profile-output__field">OIDC Issuer: {props.row.oidcIssuer}</div>}
-    {props.row.inbox && <div class="solid-profile-output__field">Inbox: {props.row.inbox}</div>}
-  </div>
+export const SolidProfileOutput: React.FC<SolidProfileOutputProps> = ({ id, row }) => (
+  <Box flexDirection="column">
+    <Text>{row.name}</Text>
+    <Text color="gray">{id}</Text>
+    {(row.email ?? '').trim() ? <Text color="gray">{row.email}</Text> : null}
+    {(row.oidcIssuer ?? '').trim() ? <Text color="gray">OIDC: {row.oidcIssuer}</Text> : null}
+    {(row.inbox ?? '').trim() ? <Text color="gray">Inbox: {row.inbox}</Text> : null}
+  </Box>
 );
 ```
+
+Also export from `naveditor-lib/src/components/social/output/index.ts` alongside the other output components.
 
 #### Modified: `vite.config.ts` (root)
 
@@ -325,7 +355,29 @@ Add the new package alias (must appear before the `@devalbo/shared` catch-all):
 
 #### New: `packages/solid-client/tests/fetch-profile.test.ts`
 
-Unit tests using `vi.spyOn(globalThis, 'fetch')` or a lightweight mock.
+Unit tests using `vi.spyOn(globalThis, 'fetch')` to mock HTTP. The existing `vitest.workspace.ts` already covers `packages/*/tests/**/*.{test,spec}.{ts,tsx}` — no workspace config update needed.
+
+Test file structure (follow the packages/state test pattern for setup):
+
+```ts
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { fetchWebIdProfile } from '../src/fetch-profile';
+
+afterEach(() => vi.restoreAllMocks());
+
+const mockFetch = (body: unknown, options: { status?: number; contentType?: string } = {}) => {
+  vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+    new Response(JSON.stringify(body), {
+      status: options.status ?? 200,
+      headers: { 'Content-Type': options.contentType ?? 'application/ld+json' },
+    })
+  );
+};
+
+describe('fetchWebIdProfile', () => {
+  // ... tests listed below
+});
+```
 
 ### Test Specifications
 
@@ -548,7 +600,8 @@ L1  packages/solid-client/src/fetch-profile.ts       (new)
     naveditor-lib/src/commands/solid.ts              (new)
     naveditor-lib/src/commands/index.ts              (add solidCommands)
     naveditor-lib/src/lib/command-args.parser.ts     (add parseSolidFetchProfileArgs)
-    naveditor-lib/src/components/output/SolidProfileOutput.tsx  (new)
+    naveditor-lib/src/components/social/output/SolidProfileOutput.tsx  (new)
+    naveditor-lib/src/components/social/output/index.ts         (add export)
     vite.config.ts                                   (add @devalbo/solid-client alias)
     packages/solid-client/tests/fetch-profile.test.ts  (new)
 
