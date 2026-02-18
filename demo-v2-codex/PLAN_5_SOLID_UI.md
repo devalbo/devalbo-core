@@ -231,6 +231,8 @@ Pick one proposal (or combination) to develop into a full phased plan. Things to
 3. How much surface area is appropriate for this iteration vs. a future plan?
 >> i'd like this to be a good reference implementation for future app ideas. that means the different levels of the spectrum to deal with the areas of Solid data concerns and the social components should all be addressed, but with the expectation that this is the not the final form and that making tweaks, changes, and redesigns should not be particularly onerous.
 
+
+## NEXT STEPS
 As for direction/next steps, let's go with A (shell first/prompt), then B (reactive read only panel), making sure that changes via A get reflected in B. Make a full plan to implement that here. Then, we should explore D (full CRM tab) - come up with a few different proposals based on prioritizing some different use cases. Some use cases to consider are:
 * making it easy to share information with others via text strings
 * making it easy to send a file to a group or contact
