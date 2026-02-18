@@ -13,6 +13,9 @@ import {
   parsePersonaIdArg,
   parsePersonaShowArgs
 } from '@/lib/social-args.parser';
+import { createElement } from 'react';
+import { PersonaDetailOutput } from '@/components/social/output/PersonaDetailOutput';
+import { PersonaListOutput } from '@/components/social/output/PersonaListOutput';
 import { makeResult, makeResultError, type SocialCommandHandler } from './_util';
 
 const nowIso = () => new Date().toISOString();
@@ -56,7 +59,10 @@ export const personaSubcommands: Record<string, SocialCommandHandler> = {
     const text = rows.length === 0
       ? '(no personas)'
       : rows.map(({ id, row }) => `${id}${defaultPersona?.id === id ? ' (default)' : ''} ${row.name}`).join('\n');
-    return makeResult(text, { personas: rows, defaultPersona });
+    return {
+      ...makeResult(text, { personas: rows, defaultPersona }),
+      component: createElement(PersonaListOutput, { personas: rows, defaultPersona })
+    };
   },
 
   create: async (args, options) => {
@@ -90,7 +96,10 @@ export const personaSubcommands: Record<string, SocialCommandHandler> = {
 
     const personaId = unsafeAsPersonaId(id);
     setPersona(options.store, personaId, row);
-    return makeResult(`Created persona ${personaId}`, { id: personaId, row });
+    return {
+      ...makeResult(`Created persona ${personaId}`, { id: personaId, row }),
+      component: createElement(PersonaDetailOutput, { id: personaId, row })
+    };
   },
 
   show: async (args, options) => {
@@ -104,7 +113,10 @@ export const personaSubcommands: Record<string, SocialCommandHandler> = {
       return makeResult(JSON.stringify({ id: parsed.value.id, ...row }, null, 2), { id: parsed.value.id, row });
     }
 
-    return makeResult(`${parsed.value.id}\nname=${row.name}\nemail=${row.email}`, { id: parsed.value.id, row });
+    return {
+      ...makeResult(`${parsed.value.id}\nname=${row.name}\nemail=${row.email}`, { id: parsed.value.id, row }),
+      component: createElement(PersonaDetailOutput, { id: parsed.value.id, row })
+    };
   },
 
   edit: async (args, options) => {
@@ -116,7 +128,10 @@ export const personaSubcommands: Record<string, SocialCommandHandler> = {
 
     const next = applyPersonaUpdates(current, parsed.value.updates);
     setPersona(options.store, parsed.value.id, next);
-    return makeResult(`Updated persona ${parsed.value.id}`, { id: parsed.value.id, row: next });
+    return {
+      ...makeResult(`Updated persona ${parsed.value.id}`, { id: parsed.value.id, row: next }),
+      component: createElement(PersonaDetailOutput, { id: parsed.value.id, row: next })
+    };
   },
 
   delete: async (args, options) => {

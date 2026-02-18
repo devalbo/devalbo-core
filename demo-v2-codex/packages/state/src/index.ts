@@ -7,5 +7,4 @@ export * from './mappers';
 export * from './persisters/memory';
 export * from './persisters/sqlite-browser';
 export * from './persisters/sqlite-node';
-export * from './hooks/use-store';
-export * from './hooks/use-table';
+export * from './hooks';

@@ -18,6 +18,10 @@ import {
   parseGroupRemoveMemberArgs,
   parseGroupShowArgs
 } from '@/lib/social-args.parser';
+import { createElement } from 'react';
+import { GroupDetailOutput } from '@/components/social/output/GroupDetailOutput';
+import { GroupListOutput } from '@/components/social/output/GroupListOutput';
+import { MembershipListOutput } from '@/components/social/output/MembershipListOutput';
 import { makeResult, makeResultError, type SocialCommandHandler } from './_util';
 
 const nowIso = () => new Date().toISOString();
@@ -60,7 +64,10 @@ export const groupSubcommands: Record<string, SocialCommandHandler> = {
     );
 
     const text = rows.length === 0 ? '(no groups)' : rows.map(({ id, row }) => `${id} ${row.name} (${row.groupType})`).join('\n');
-    return makeResult(text, { groups: rows });
+    return {
+      ...makeResult(text, { groups: rows }),
+      component: createElement(GroupListOutput, { groups: rows })
+    };
   },
 
   create: async (args, options) => {
@@ -84,7 +91,10 @@ export const groupSubcommands: Record<string, SocialCommandHandler> = {
 
     const groupId = unsafeAsGroupId(id);
     setGroup(options.store, groupId, row);
-    return makeResult(`Created group ${groupId}`, { id: groupId, row });
+    return {
+      ...makeResult(`Created group ${groupId}`, { id: groupId, row }),
+      component: createElement(GroupDetailOutput, { id: groupId, row })
+    };
   },
 
   show: async (args, options) => {
@@ -98,7 +108,10 @@ export const groupSubcommands: Record<string, SocialCommandHandler> = {
       return makeResult(JSON.stringify({ id: parsed.value.id, ...row }, null, 2), { id: parsed.value.id, row });
     }
 
-    return makeResult(`${parsed.value.id}\nname=${row.name}\ntype=${row.groupType}`, { id: parsed.value.id, row });
+    return {
+      ...makeResult(`${parsed.value.id}\nname=${row.name}\ntype=${row.groupType}`, { id: parsed.value.id, row }),
+      component: createElement(GroupDetailOutput, { id: parsed.value.id, row })
+    };
   },
 
   edit: async (args, options) => {
@@ -110,7 +123,10 @@ export const groupSubcommands: Record<string, SocialCommandHandler> = {
 
     const next = applyGroupUpdates(current, parsed.value.updates);
     setGroup(options.store, parsed.value.id, next);
-    return makeResult(`Updated group ${parsed.value.id}`, { id: parsed.value.id, row: next });
+    return {
+      ...makeResult(`Updated group ${parsed.value.id}`, { id: parsed.value.id, row: next }),
+      component: createElement(GroupDetailOutput, { id: parsed.value.id, row: next })
+    };
   },
 
   delete: async (args, options) => {
@@ -162,7 +178,10 @@ export const groupSubcommands: Record<string, SocialCommandHandler> = {
       ? '(no members)'
       : rows.map(({ id, row }) => `${id} ${row.contactId} role=${row.role || '-'}`).join('\n');
 
-    return makeResult(text, { members: rows, groupId: parsed.value.groupId });
+    return {
+      ...makeResult(text, { members: rows, groupId: parsed.value.groupId }),
+      component: createElement(MembershipListOutput, { members: rows, groupId: parsed.value.groupId })
+    };
   }
 };
 

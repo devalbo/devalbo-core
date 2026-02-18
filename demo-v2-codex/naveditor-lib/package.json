@@ -12,7 +12,7 @@
     "@devalbo/shared": "workspace:*",
     "@devalbo/state": "workspace:*",
     "@devalbo/ui": "workspace:*",
-    "@optique/core": "^0.10.0",
+    "@optique/core": "^0.10.3",
     "@sqlite.org/sqlite-wasm": "catalog:",
     "@xterm/xterm": "catalog:",
     "commander": "catalog:",

@@ -24,6 +24,8 @@
     "react": "catalog:"
   },
   "devDependencies": {
+    "@types/react-test-renderer": "catalog:",
+    "react-test-renderer": "catalog:",
     "vitest": "catalog:"
   }
 }

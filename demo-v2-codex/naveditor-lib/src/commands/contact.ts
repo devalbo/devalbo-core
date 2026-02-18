@@ -16,6 +16,9 @@ import {
   parseContactSearchArgs,
   parseContactShowArgs
 } from '@/lib/social-args.parser';
+import { createElement } from 'react';
+import { ContactDetailOutput } from '@/components/social/output/ContactDetailOutput';
+import { ContactListOutput } from '@/components/social/output/ContactListOutput';
 import { makeResult, makeResultError, type SocialCommandHandler } from './_util';
 
 const nowIso = () => new Date().toISOString();
@@ -63,7 +66,10 @@ export const contactSubcommands: Record<string, SocialCommandHandler> = {
     });
 
     const text = rows.length === 0 ? '(no contacts)' : rows.map(({ id, row }) => `${id} ${row.name} (${row.kind})`).join('\n');
-    return makeResult(text, { contacts: rows });
+    return {
+      ...makeResult(text, { contacts: rows }),
+      component: createElement(ContactListOutput, { contacts: rows })
+    };
   },
 
   add: async (args, options) => {
@@ -95,7 +101,10 @@ export const contactSubcommands: Record<string, SocialCommandHandler> = {
 
     const contactId = unsafeAsContactId(id);
     setContact(options.store, contactId, row);
-    return makeResult(`Created contact ${contactId}`, { id: contactId, row });
+    return {
+      ...makeResult(`Created contact ${contactId}`, { id: contactId, row }),
+      component: createElement(ContactDetailOutput, { id: contactId, row })
+    };
   },
 
   show: async (args, options) => {
@@ -109,10 +118,13 @@ export const contactSubcommands: Record<string, SocialCommandHandler> = {
       return makeResult(JSON.stringify({ id: parsed.value.id, ...row }, null, 2), { id: parsed.value.id, row });
     }
 
-    return makeResult(`${parsed.value.id}\nname=${row.name}\nkind=${row.kind}\nemail=${row.email}`, {
-      id: parsed.value.id,
-      row
-    });
+    return {
+      ...makeResult(`${parsed.value.id}\nname=${row.name}\nkind=${row.kind}\nemail=${row.email}`, {
+        id: parsed.value.id,
+        row
+      }),
+      component: createElement(ContactDetailOutput, { id: parsed.value.id, row })
+    };
   },
 
   edit: async (args, options) => {
@@ -124,7 +136,10 @@ export const contactSubcommands: Record<string, SocialCommandHandler> = {
 
     const next = applyContactUpdates(current, parsed.value.updates);
     setContact(options.store, parsed.value.id, next);
-    return makeResult(`Updated contact ${parsed.value.id}`, { id: parsed.value.id, row: next });
+    return {
+      ...makeResult(`Updated contact ${parsed.value.id}`, { id: parsed.value.id, row: next }),
+      component: createElement(ContactDetailOutput, { id: parsed.value.id, row: next })
+    };
   },
 
   delete: async (args, options) => {
@@ -141,7 +156,10 @@ export const contactSubcommands: Record<string, SocialCommandHandler> = {
 
     const rows = searchContacts(options.store, parsed.value.query);
     const text = rows.length === 0 ? '(no matches)' : rows.map(({ id, row }) => `${id} ${row.name}`).join('\n');
-    return makeResult(text, { contacts: rows, query: parsed.value.query });
+    return {
+      ...makeResult(text, { contacts: rows, query: parsed.value.query }),
+      component: createElement(ContactListOutput, { contacts: rows, query: parsed.value.query })
+    };
   },
 
   link: async (args, options) => {

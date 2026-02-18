@@ -37,16 +37,18 @@ export const removeMember = (store: Store, groupId: GroupId, contactId: ContactI
   store.delRow(MEMBERSHIPS_TABLE, getMembershipRowId(groupId, contactId));
 };
 
-export const listMembers = (store: Store, groupId: GroupId): Array<{ id: MembershipId; row: MembershipRow }> => {
+export const listMemberships = (store: Store): Array<{ id: MembershipId; row: MembershipRow }> => {
   const table = store.getTable(MEMBERSHIPS_TABLE);
   if (!table) return [];
 
-  return Object.entries(table)
-    .flatMap(([id, row]) => {
-      const parsed = safeParseWithWarning<MembershipRow>(MembershipRowSchema, row, MEMBERSHIPS_TABLE, id, 'list');
-      return parsed ? [{ id: id as MembershipId, row: parsed }] : [];
-    })
-    .filter(({ row }) => row.groupId === groupId);
+  return Object.entries(table).flatMap(([id, row]) => {
+    const parsed = safeParseWithWarning<MembershipRow>(MembershipRowSchema, row, MEMBERSHIPS_TABLE, id, 'list');
+    return parsed ? [{ id: id as MembershipId, row: parsed }] : [];
+  });
+};
+
+export const listMembers = (store: Store, groupId: GroupId): Array<{ id: MembershipId; row: MembershipRow }> => {
+  return listMemberships(store).filter(({ row }) => row.groupId === groupId);
 };
 
 export const getGroupsForContact = (store: Store, contactId: ContactId): GroupId[] => {
