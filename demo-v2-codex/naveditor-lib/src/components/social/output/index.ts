@@ -5,3 +5,4 @@ export * from './ContactDetailOutput';
 export * from './GroupListOutput';
 export * from './GroupDetailOutput';
 export * from './MembershipListOutput';
+export * from './SolidProfileOutput';

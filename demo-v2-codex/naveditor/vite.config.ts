@@ -25,6 +25,7 @@ export default defineConfig({
         '@devalbo/filesystem',
         '@devalbo/filesystem/node',
         '@devalbo/shared',
+        '@devalbo/solid-client',
         '@devalbo/state',
         '@devalbo/ui'
       ]

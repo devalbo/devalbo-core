@@ -37,6 +37,7 @@ export default defineConfig({
       { find: '@/lib/validate-args', replacement: resolve(__dirname, '../naveditor-lib/src/lib/validate-args.ts') },
       { find: '@devalbo/commands', replacement: resolve(__dirname, '../packages/commands/src/index.ts') },
       { find: '@devalbo/shared', replacement: resolve(__dirname, '../packages/shared/src/index.ts') },
+      { find: '@devalbo/solid-client', replacement: resolve(__dirname, '../packages/solid-client/src/index.ts') },
       { find: '@devalbo/state', replacement: resolve(__dirname, '../packages/state/src/index.ts') },
       { find: '@devalbo/ui', replacement: resolve(__dirname, '../packages/ui/src/index.ts') },
       { find: '@', replacement: resolve(__dirname, '../naveditor-lib/src') },

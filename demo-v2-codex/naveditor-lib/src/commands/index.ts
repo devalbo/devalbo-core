@@ -1,6 +1,7 @@
 import type { CommandHandler, ExtendedCommandOptions } from './_util';
 import { filesystemCommands } from './filesystem';
 import { ioCommands } from './io';
+import { solidCommands } from './solid';
 import { systemCommands } from './system';
 import { personaCommand } from './persona';
 import { contactCommand } from './contact';
@@ -9,7 +10,8 @@ import { groupCommand } from './group';
 type CoreCommandName =
   | keyof typeof filesystemCommands
   | keyof typeof systemCommands
-  | keyof typeof ioCommands;
+  | keyof typeof ioCommands
+  | keyof typeof solidCommands;
 
 type SocialCommandName = 'persona' | 'contact' | 'group';
 type AliasCommandName = 'navigate' | 'edit';
@@ -20,7 +22,8 @@ type CommandMap = Record<CommandName, CommandHandler>;
 const baseCommands = {
   ...filesystemCommands,
   ...systemCommands,
-  ...ioCommands
+  ...ioCommands,
+  ...solidCommands
 } as const;
 
 export const commands: CommandMap = {

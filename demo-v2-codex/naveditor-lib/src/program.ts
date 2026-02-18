@@ -36,6 +36,10 @@ export function createProgram() {
     .command('solid-import')
     .description('Import social entities from a Solid JSON-LD bundle file')
     .argument('<file>', 'Solid JSON-LD bundle file path');
+  program
+    .command('solid-fetch-profile')
+    .description('Fetch a public Solid WebID profile as JSON-LD')
+    .argument('<webId>', 'WebID URL');
   program.command('exit').description('Exit interactive terminal session');
   program.command('interactive').description('Start interactive terminal session');
   program

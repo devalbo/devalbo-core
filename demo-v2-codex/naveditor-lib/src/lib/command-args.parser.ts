@@ -181,3 +181,14 @@ export const parseSolidExportArgs = (args: string[]): ParseResult<SolidExportArg
 
 export const parseSolidImportArgs = (args: string[]): ParseResult<SolidImportArgs> =>
   parseWithSchema(solidImportParser, args, SolidImportArgsSchema);
+
+export const parseSolidFetchProfileArgs = (
+  args: string[]
+): { success: true; value: { webId: string } } | { success: false; error: string } => {
+  const webId = args[0]?.trim();
+  if (!webId) return { success: false, error: 'webId is required' };
+  if (!webId.startsWith('http://') && !webId.startsWith('https://')) {
+    return { success: false, error: 'webId must be an http(s) URL' };
+  }
+  return { success: true, value: { webId } };
+};

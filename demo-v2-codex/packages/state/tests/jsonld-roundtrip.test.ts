@@ -184,4 +184,20 @@ describe('jsonld roundtrip', () => {
     expect(parsed.row.groupType).toBe('team');
     expect(parsed.row.parentGroup).toBe('group-org-1');
   });
+
+  it('parses solid:oidcIssuer from both node refs and string literals', () => {
+    const fromNode = jsonLdToPersonaRow({
+      '@id': 'persona_node',
+      'foaf:name': 'Alice',
+      'solid:oidcIssuer': { '@id': 'https://issuer.example.org' }
+    });
+    expect(fromNode.row.oidcIssuer).toBe('https://issuer.example.org');
+
+    const fromString = jsonLdToPersonaRow({
+      '@id': 'persona_string',
+      'foaf:name': 'Alice',
+      'solid:oidcIssuer': 'https://issuer.example.org'
+    });
+    expect(fromString.row.oidcIssuer).toBe('https://issuer.example.org');
+  });
 });

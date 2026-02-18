@@ -301,6 +301,9 @@ importers:
       '@devalbo/shared':
         specifier: workspace:*
         version: link:../packages/shared
+      '@devalbo/solid-client':
+        specifier: workspace:*
+        version: link:../packages/solid-client
       '@devalbo/state':
         specifier: workspace:*
         version: link:../packages/state
@@ -539,6 +542,22 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 4.3.6
+
+  packages/solid-client:
+    dependencies:
+      '@devalbo/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@devalbo/state':
+        specifier: workspace:*
+        version: link:../state
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.0.18(@types/node@25.2.3)(@vitest/ui@4.0.18)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/state:
     dependencies:

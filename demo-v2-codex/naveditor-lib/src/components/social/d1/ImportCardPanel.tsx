@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { jsonLdToContactRow, setContact, useStore } from '@devalbo/state';
 import { ContactIdToolbox, unsafeAsContactId, type ContactId } from '@devalbo/shared';
+import { fetchWebIdProfile } from '@devalbo/solid-client';
 
 interface ImportCardPanelProps {
   onImported?: (contactId: ContactId) => void;
@@ -23,7 +24,7 @@ export const ImportCardPanel: React.FC<ImportCardPanelProps> = ({ onImported }) 
   const [status, setStatus] = useState<string>('');
   const [error, setError] = useState<string>('');
 
-  const submit = () => {
+  const submit = async () => {
     setStatus('');
     setError('');
 
@@ -34,7 +35,31 @@ export const ImportCardPanel: React.FC<ImportCardPanelProps> = ({ onImported }) 
     }
 
     if (/^https?:\/\//.test(trimmed)) {
-      setError('WebID URL import is not supported yet. Paste JSON-LD text.');
+      const fetched = await fetchWebIdProfile(trimmed);
+      if (!fetched.ok) {
+        setError(fetched.error);
+        return;
+      }
+      const contactId = unsafeAsContactId(ContactIdToolbox.createRandomId?.() ?? crypto.randomUUID());
+      setContact(store, contactId, {
+        name: fetched.row.name,
+        uid: `urn:uuid:${crypto.randomUUID()}`,
+        nickname: fetched.row.nickname,
+        kind: 'person',
+        email: fetched.row.email,
+        phone: fetched.row.phone,
+        url: fetched.row.homepage,
+        photo: fetched.row.image,
+        notes: fetched.row.bio,
+        organization: '',
+        role: '',
+        webId: trimmed,
+        agentCategory: '',
+        linkedPersona: '',
+        updatedAt: fetched.row.updatedAt || new Date().toISOString()
+      });
+      setStatus(`Imported WebID profile: ${fetched.row.name}`);
+      onImported?.(contactId);
       return;
     }
 
