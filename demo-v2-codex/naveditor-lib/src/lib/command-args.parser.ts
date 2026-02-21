@@ -192,3 +192,22 @@ export const parseSolidFetchProfileArgs = (
   }
   return { success: true, value: { webId } };
 };
+
+export const parseSolidLoginArgs = (
+  args: string[]
+): { success: true; value: { issuer: string } } | { success: false; error: string } => {
+  const issuer = args[0]?.trim();
+  if (!issuer) return { success: false, error: 'issuer is required' };
+  if (!issuer.startsWith('http://') && !issuer.startsWith('https://')) {
+    return { success: false, error: 'issuer must be an http(s) URL' };
+  }
+  return { success: true, value: { issuer } };
+};
+
+export const parseSolidShareCardArgs = (
+  args: string[]
+): { success: true; value: { contactId: string } } | { success: false; error: string } => {
+  const contactId = args[0]?.trim();
+  if (!contactId) return { success: false, error: 'contactId is required' };
+  return { success: true, value: { contactId } };
+};

@@ -20,6 +20,7 @@ export const PersonaRowSchema = z.object({
   publicTypeIndex: optionalStringCell,
   privateTypeIndex: optionalStringCell,
   preferencesFile: optionalStringCell,
+  storage: optionalStringCell,
   profileDoc: optionalStringCell,
   isDefault: z.boolean(),
   updatedAt: z.string()

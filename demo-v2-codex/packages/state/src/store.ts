@@ -46,6 +46,21 @@ export const createDevalboStore = (): Store => {
       cursorLine: { type: 'number' },
       cursorCol: { type: 'number' }
     },
+    sync_roots: {
+      label: { type: 'string' },
+      localPath: { type: 'string' },
+      podUrl: { type: 'string' },
+      webId: { type: 'string' },
+      readonly: { type: 'boolean' },
+      enabled: { type: 'boolean' }
+    },
+    file_sync_state: {
+      path: { type: 'string' },
+      syncRootId: { type: 'string' },
+      podEtag: { type: 'string' },
+      contentHash: { type: 'string' },
+      status: { type: 'string' }
+    },
     ...socialTablesSchema
   });
 

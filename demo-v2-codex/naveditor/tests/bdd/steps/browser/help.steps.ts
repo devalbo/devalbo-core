@@ -22,7 +22,16 @@ When('I run the help command', async function () {
 
 Then('I should see {string}', async function (expected: string) {
   const { pageA } = getPages();
-  await pageA.waitForFunction((value) => document.body.innerText.includes(value), expected);
-  const text = (await pageA.textContent('body')) ?? '';
+  await pageA.waitForFunction(async (value) => {
+    const cli = (window as unknown as { cli?: { helpText?: () => Promise<string> } }).cli;
+    if (!cli?.helpText) return false;
+    const text = await cli.helpText();
+    return text.includes(value);
+  }, expected);
+  const text = await pageA.evaluate(async () => {
+    const cli = (window as unknown as { cli?: { helpText?: () => Promise<string> } }).cli;
+    if (!cli?.helpText) return '';
+    return cli.helpText();
+  });
   assert.ok(text.includes(expected));
 });

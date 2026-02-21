@@ -61,4 +61,32 @@ describe('ShareCardPanel', () => {
 
     expect(copied).toContain('Alice');
   });
+
+  it('commits edited name on blur and updates timestamp', async () => {
+    setPersona(store, PERSONA_ID, {
+      name: 'Alice',
+      isDefault: true,
+      updatedAt: '2026-02-18T00:00:00.000Z'
+    });
+
+    await act(async () => {
+      renderer = create(
+        <StoreContext.Provider value={store}>
+          <ShareCardPanel personaId={PERSONA_ID} />
+        </StoreContext.Provider>
+      );
+    });
+
+    const nameInput = renderer.root.findAllByType('input')[0];
+    await act(async () => {
+      nameInput?.props.onChange({ target: { value: 'Alice Updated' } });
+    });
+    await act(async () => {
+      nameInput?.props.onBlur();
+    });
+
+    const row = store.getRow('personas', PERSONA_ID);
+    expect(row.name).toBe('Alice Updated');
+    expect(row.updatedAt).not.toBe('2026-02-18T00:00:00.000Z');
+  });
 });

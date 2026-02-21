@@ -1,11 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { unsafeAsDirectoryPath, detectPlatform, RuntimePlatform } from '@devalbo/shared';
+import {
+  assertAbsolutePath,
+  detectPlatform,
+  RuntimePlatform,
+  unsafeAsDirectoryPath
+} from '@devalbo/shared';
+import { listFileSyncStatesForRoot, listSyncRoots, useStore } from '@devalbo/state';
 import {
   listMimeTypeHandlers,
   resolveMimeTypeHandler,
   type FileContent
 } from '@devalbo/ui';
+import { findSyncRoot } from '@devalbo/solid-client';
+import { useFileSyncMap } from '@/components/social/FileSyncContext';
 import { getFilesystemBackendInfo, getWatcher } from '@/lib/file-operations';
+import { SyncRootsPanel } from './SyncRootsPanel';
 import {
   buildTree,
   type FsTreeNode,
@@ -27,18 +36,28 @@ function TreeItem({
   depth,
   expanded,
   selectedPath,
+  syncStatusByPath,
   onToggle,
-  onSelect
+  onSelect,
+  onResolveConflict
 }: {
   node: FsTreeNode;
   depth: number;
   expanded: Set<string>;
   selectedPath: string | null;
+  syncStatusByPath: Map<string, string>;
   onToggle: (path: string) => void;
   onSelect: (node: FsTreeNode) => void;
+  onResolveConflict: (path: string, resolution: 'keep-local' | 'keep-pod' | 'keep-both') => void;
 }) {
   const isExpanded = expanded.has(node.path);
   const isSelected = selectedPath === node.path;
+  const syncStatus = !node.isDirectory ? syncStatusByPath.get(node.path) : null;
+  const syncBadge =
+    syncStatus === 'synced' ? '✓' :
+      syncStatus === 'pending_upload' ? '↑' :
+        syncStatus === 'pending_delete' ? '✗' :
+          syncStatus === 'conflict' ? '⚠' : null;
 
   return (
     <div>
@@ -60,8 +79,15 @@ function TreeItem({
         }}
       >
         {node.isDirectory ? (isExpanded ? '▾ ' : '▸ ') : '  '}
-        {node.name}
+        {node.name} {syncBadge ? <span style={{ color: syncStatus === 'conflict' ? '#fde68a' : '#67e8f9' }}>{syncBadge}</span> : null}
       </button>
+      {!node.isDirectory && isSelected && syncStatus === 'conflict' && (
+        <div style={{ marginLeft: `${8 + depth * 14}px`, display: 'flex', gap: '6px', marginBottom: '4px' }}>
+          <button onClick={() => onResolveConflict(node.path, 'keep-local')} style={{ fontSize: '11px' }}>keep-local</button>
+          <button onClick={() => onResolveConflict(node.path, 'keep-pod')} style={{ fontSize: '11px' }}>keep-pod</button>
+          <button onClick={() => onResolveConflict(node.path, 'keep-both')} style={{ fontSize: '11px' }}>keep-both</button>
+        </div>
+      )}
       {node.isDirectory && isExpanded && node.children?.map((child) => (
         <TreeItem
           key={child.path}
@@ -69,8 +95,10 @@ function TreeItem({
           depth={depth + 1}
           expanded={expanded}
           selectedPath={selectedPath}
+          syncStatusByPath={syncStatusByPath}
           onToggle={onToggle}
           onSelect={onSelect}
+          onResolveConflict={onResolveConflict}
         />
       ))}
     </div>
@@ -78,6 +106,8 @@ function TreeItem({
 }
 
 export const FileExplorer: React.FC = () => {
+  const store = useStore();
+  const fileSyncMap = useFileSyncMap();
   const [tree, setTree] = useState<FsTreeNode | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['/']));
   const [currentDir, setCurrentDir] = useState(getDefaultCwd());
@@ -91,6 +121,7 @@ export const FileExplorer: React.FC = () => {
   const [status, setStatus] = useState<string>('');
   const [statusTone, setStatusTone] = useState<'info' | 'error'>('info');
   const [backendLabel, setBackendLabel] = useState<string>('loading...');
+  const [syncVersion, setSyncVersion] = useState(0);
   const refreshRequestRef = useRef(0);
 
   const setActionStatus = useCallback((message: string, tone: 'info' | 'error' = 'info') => {
@@ -178,6 +209,15 @@ export const FileExplorer: React.FC = () => {
       })
       .catch((err: unknown) => setBackendLabel(`error: ${String(err)}`));
   }, []);
+
+  useEffect(() => {
+    const syncRootsListener = store.addTableListener('sync_roots', () => setSyncVersion((v) => v + 1));
+    const fileStateListener = store.addTableListener('file_sync_state', () => setSyncVersion((v) => v + 1));
+    return () => {
+      store.delListener(syncRootsListener);
+      store.delListener(fileStateListener);
+    };
+  }, [store]);
 
   useEffect(() => {
     let unwatch: (() => void) | undefined;
@@ -383,6 +423,42 @@ export const FileExplorer: React.FC = () => {
 
   const registeredHandlers = useMemo(() => listMimeTypeHandlers(), []);
 
+  const syncStatusByPath = useMemo(() => {
+    const map = new Map<string, string>();
+    const roots = listSyncRoots(store);
+    for (const root of roots) {
+      for (const row of listFileSyncStatesForRoot(store, root.id)) {
+        map.set(row.path, row.status);
+      }
+    }
+    return map;
+  }, [store, syncVersion]);
+
+  const resolveConflictFromTree = useCallback(async (
+    path: string,
+    resolution: 'keep-local' | 'keep-pod' | 'keep-both'
+  ) => {
+    try {
+      const absolutePath = assertAbsolutePath(path);
+      const roots = listSyncRoots(store);
+      const root = findSyncRoot(absolutePath, roots);
+      if (!root) {
+        setActionStatus(`No sync root for ${path}`, 'error');
+        return;
+      }
+      const sync = fileSyncMap.get(root.id);
+      if (!sync) {
+        setActionStatus(`Sync root ${root.id.slice(0, 8)} is inactive`, 'error');
+        return;
+      }
+      await sync.resolveConflict(absolutePath, resolution);
+      setActionStatus(`Resolved conflict for ${path} (${resolution})`);
+      await refresh();
+    } catch (error) {
+      setActionStatus(`Resolve failed: ${String(error)}`, 'error');
+    }
+  }, [fileSyncMap, refresh, setActionStatus, store]);
+
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '12px', minHeight: '680px' }}>
       <div style={{ border: '1px solid #334155', borderRadius: '8px', overflow: 'auto', background: '#0b1220' }}>
@@ -393,6 +469,7 @@ export const FileExplorer: React.FC = () => {
             depth={0}
             expanded={expanded}
             selectedPath={selectedPath}
+            syncStatusByPath={syncStatusByPath}
             onToggle={(path) => {
               setExpanded((prev) => {
                 const next = new Set(prev);
@@ -404,10 +481,12 @@ export const FileExplorer: React.FC = () => {
             onSelect={(node) => {
               selectNode(node).catch((err: unknown) => setStatus(`Open failed: ${String(err)}`));
             }}
+            onResolveConflict={resolveConflictFromTree}
           />
         ) : (
           <div style={{ padding: '12px', color: '#94a3b8' }}>Loading...</div>
         )}
+        <SyncRootsPanel />
       </div>
 
       <div style={{ border: '1px solid #334155', borderRadius: '8px', background: '#0b1220', color: '#e2e8f0', padding: '12px' }}>

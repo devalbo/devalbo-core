@@ -1,5 +1,6 @@
 import {
   DCTERMS,
+  FOAF,
   POD_CONTEXT,
   SOLID,
   VCARD,
@@ -89,24 +90,32 @@ export const contactToJsonLd = (row: ContactRow, id: ContactId): JsonLdObject =>
 
 const inferKind = (agentCategory: string): ContactKind => (nonEmpty(agentCategory) ? 'agent' : 'person');
 
+const isValidUrl = (s: string): boolean => { try { new URL(s); return true; } catch { return false; } };
+
 export const jsonLdToContactRow = (jsonLd: JsonLdObject): { id: ContactId; row: ContactRowInput } => {
   const agentCategory = valueAsString(get(jsonLd, 'schema:applicationCategory', SCHEMA_APPLICATION_CATEGORY));
+  const rawId = valueAsString(jsonLd['@id']);
 
   return {
-    id: valueAsString(jsonLd['@id']) as ContactId,
+    id: rawId as ContactId,
     row: {
-      name: valueAsString(get(jsonLd, 'vcard:fn', VCARD.fn)),
+      // foaf:name fallback handles persona cards (foaf:Person) pasted into the importer
+      name: valueAsString(get(jsonLd, 'vcard:fn', VCARD.fn)) || valueAsString(get(jsonLd, 'foaf:name', FOAF.name)),
       uid: valueAsString(get(jsonLd, 'vcard:hasUID', VCARD.hasUID)),
-      nickname: valueAsString(get(jsonLd, 'vcard:nickname', VCARD.nickname)),
+      nickname: valueAsString(get(jsonLd, 'vcard:nickname', VCARD.nickname)) || valueAsString(get(jsonLd, 'foaf:nick', FOAF.nick)),
       kind: inferKind(agentCategory),
       email: toStoreMultiCell(parseJsonLdMultiField(get(jsonLd, 'vcard:hasEmail', VCARD.hasEmail))),
       phone: toStoreMultiCell(parseJsonLdMultiField(get(jsonLd, 'vcard:hasTelephone', VCARD.hasTelephone))),
-      url: valueAsString(get(jsonLd, 'vcard:hasURL', VCARD.hasURL)),
-      photo: valueAsString(get(jsonLd, 'vcard:hasPhoto', VCARD.hasPhoto)),
-      notes: valueAsString(get(jsonLd, 'vcard:hasNote', VCARD.hasNote)),
+      // foaf:homepage fallback: persona cards use foaf:homepage (as node ref) instead of vcard:hasURL
+      url: valueAsString(get(jsonLd, 'vcard:hasURL', VCARD.hasURL)) || valueAsNodeId(get(jsonLd, 'foaf:homepage', FOAF.homepage)),
+      // foaf:img fallback: persona cards use foaf:img instead of vcard:hasPhoto
+      photo: valueAsString(get(jsonLd, 'vcard:hasPhoto', VCARD.hasPhoto)) || valueAsString(get(jsonLd, 'foaf:img', FOAF.img)),
+      // vcard:note fallback: persona cards use vcard:note (bio) instead of vcard:hasNote
+      notes: valueAsString(get(jsonLd, 'vcard:hasNote', VCARD.hasNote)) || valueAsString(get(jsonLd, 'vcard:note', VCARD.note)),
       organization: valueAsString(get(jsonLd, 'vcard:hasOrganizationName', VCARD.hasOrganizationName)),
       role: valueAsString(get(jsonLd, 'vcard:hasRole', VCARD.hasRole)),
-      webId: valueAsNodeId(get(jsonLd, 'solid:webid', SOLID.webid)),
+      // URL-shaped @id fallback: persona cards use @id as their WebID
+      webId: valueAsNodeId(get(jsonLd, 'solid:webid', SOLID.webid)) || (isValidUrl(rawId) ? rawId : ''),
       agentCategory,
       linkedPersona: valueAsNodeId(get(jsonLd, 'vcard:hasRelated', VCARD.hasRelated)),
       updatedAt: valueAsString(get(jsonLd, 'dc:modified', DCTERMS.modified))

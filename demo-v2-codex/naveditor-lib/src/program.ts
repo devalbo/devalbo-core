@@ -40,6 +40,26 @@ export function createProgram() {
     .command('solid-fetch-profile')
     .description('Fetch a public Solid WebID profile as JSON-LD')
     .argument('<webId>', 'WebID URL');
+  program
+    .command('solid-login')
+    .description('Authenticate with a Solid OIDC issuer')
+    .argument('<issuer>', 'OIDC issuer URL');
+  program
+    .command('solid-logout')
+    .description('Clear active Solid session');
+  program
+    .command('solid-whoami')
+    .description('Show authenticated Solid WebID');
+  program
+    .command('solid-pod-push')
+    .description('Push social data to your Solid POD');
+  program
+    .command('solid-pod-pull')
+    .description('Pull social data from your Solid POD');
+  program
+    .command('solid-share-card')
+    .description('Send your persona card to a contact inbox')
+    .argument('<contactId>', 'Contact row id');
   program.command('exit').description('Exit interactive terminal session');
   program.command('interactive').description('Start interactive terminal session');
   program

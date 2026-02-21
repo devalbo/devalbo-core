@@ -200,4 +200,51 @@ describe('jsonld roundtrip', () => {
     });
     expect(fromString.row.oidcIssuer).toBe('https://issuer.example.org');
   });
+
+  it('parses a persona card (foaf:Person) as a contact row', () => {
+    // Simulates pasting the output of personaToJsonLd into ImportCardPanel.
+    // persona uses foaf:name / foaf:nick / foaf:img / vcard:note / foaf:homepage
+    // instead of the vcard equivalents; jsonLdToContactRow must map them correctly.
+    const personaId = unsafeAsPersonaId('https://alice.example/profile/card#me');
+    const personaRow = {
+      name: 'Alice',
+      nickname: 'ali',
+      givenName: 'Alice',
+      familyName: 'Example',
+      email: 'mailto:alice@example.com',
+      phone: 'tel:+15550001',
+      image: 'https://example.com/alice.png',
+      bio: 'Short bio',
+      homepage: 'https://example.com',
+      oidcIssuer: '',
+      inbox: '',
+      publicTypeIndex: '',
+      privateTypeIndex: '',
+      preferencesFile: '',
+      profileDoc: '',
+      isDefault: false,
+      updatedAt: ''
+    } as const;
+
+    const personaJsonLd = personaToJsonLd(personaRow, personaId);
+    const contact = jsonLdToContactRow(personaJsonLd);
+
+    expect(contact.row.name).toBe('Alice');
+    expect(contact.row.nickname).toBe('ali');
+    expect(contact.row.photo).toBe('https://example.com/alice.png');
+    expect(contact.row.notes).toBe('Short bio');
+    expect(contact.row.url).toBe('https://example.com');
+    expect(contact.row.email).toBe('mailto:alice@example.com');
+    // URL-shaped @id becomes webId so the contact is reachable for Solid delivery
+    expect(contact.row.webId).toBe('https://alice.example/profile/card#me');
+  });
+
+  it('parses pim:storage from node references', () => {
+    const parsed = jsonLdToPersonaRow({
+      '@id': 'https://alice.example/profile/card#me',
+      'foaf:name': 'Alice',
+      'pim:storage': { '@id': 'https://alice.example/' }
+    });
+    expect(parsed.row.storage).toBe('https://alice.example/');
+  });
 });

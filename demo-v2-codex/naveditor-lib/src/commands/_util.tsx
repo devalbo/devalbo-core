@@ -1,16 +1,26 @@
 import { Box, Text } from 'ink';
-import type { CommandOptions, CommandResult } from '@devalbo/shared';
+import type { AppConfig, CommandOptions, CommandResult, IConnectivityService } from '@devalbo/shared';
+import type { SolidSession } from '@devalbo/solid-client';
 import type { Store } from 'tinybase';
+import type { IFilesystemDriver } from '@devalbo/filesystem';
 
 type CommandOptionsBase = CommandOptions & {
   cwd?: string;
   setCwd?: (nextCwd: string) => void;
   clearScreen?: () => void;
   exit?: () => void;
+  session?: SolidSession | null;
+  config?: AppConfig;
+  driver?: IFilesystemDriver;
+  connectivity?: IConnectivityService;
 };
 
 export type ExtendedCommandOptions = CommandOptionsBase | (CommandOptionsBase & { store: Store });
 export type ExtendedCommandOptionsWithStore = CommandOptionsBase & { store: Store };
+export type ExtendedCommandOptionsWithSession = CommandOptionsBase & {
+  store: Store;
+  session: SolidSession;
+};
 
 export type AsyncCommandHandler = (args: string[], options?: ExtendedCommandOptions) => Promise<CommandResult>;
 export type SocialCommandHandler = (args: string[], options: ExtendedCommandOptionsWithStore) => Promise<CommandResult>;

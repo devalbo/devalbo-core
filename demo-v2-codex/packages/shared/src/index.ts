@@ -10,3 +10,4 @@ export * from './validation';
 export * from './validation/errors';
 export * from './schemas';
 export * from './vocab/solid';
+export * from './app-config';

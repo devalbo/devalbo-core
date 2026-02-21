@@ -2,6 +2,7 @@ import {
   DCTERMS,
   FOAF,
   LDP,
+  NS,
   POD_CONTEXT,
   SOLID,
   VCARD,
@@ -105,6 +106,7 @@ export const jsonLdToPersonaRow = (jsonLd: JsonLdObject): { id: PersonaId; row: 
     publicTypeIndex: valueAsNodeId(get(jsonLd, 'solid:publicTypeIndex', SOLID.publicTypeIndex)),
     privateTypeIndex: valueAsNodeId(get(jsonLd, 'solid:privateTypeIndex', SOLID.privateTypeIndex)),
     preferencesFile: valueAsNodeId(get(jsonLd, 'pim:preferencesFile', 'http://www.w3.org/ns/pim/space#preferencesFile')),
+    storage: valueAsNodeId(get(jsonLd, 'pim:storage', `${NS.pim}storage`)),
     profileDoc: valueAsNodeId(get(jsonLd, 'foaf:isPrimaryTopicOf', FOAF.isPrimaryTopicOf)),
     isDefault: false,
     updatedAt: valueAsString(get(jsonLd, 'dc:modified', DCTERMS.modified))

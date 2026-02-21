@@ -5,3 +5,5 @@ export * from './contacts';
 export * from './groups';
 export * from './memberships';
 export * from './activities';
+export * from './sync-roots';
+export * from './file-sync-state';

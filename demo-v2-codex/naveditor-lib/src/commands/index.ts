@@ -6,12 +6,16 @@ import { systemCommands } from './system';
 import { personaCommand } from './persona';
 import { contactCommand } from './contact';
 import { groupCommand } from './group';
+import { filesCommands } from './files';
+import { appCommands } from './app';
 
 type CoreCommandName =
   | keyof typeof filesystemCommands
   | keyof typeof systemCommands
   | keyof typeof ioCommands
-  | keyof typeof solidCommands;
+  | keyof typeof solidCommands
+  | keyof typeof filesCommands
+  | keyof typeof appCommands;
 
 type SocialCommandName = 'persona' | 'contact' | 'group';
 type AliasCommandName = 'navigate' | 'edit';
@@ -23,7 +27,9 @@ const baseCommands = {
   ...filesystemCommands,
   ...systemCommands,
   ...ioCommands,
-  ...solidCommands
+  ...solidCommands,
+  ...filesCommands,
+  ...appCommands
 } as const;
 
 export const commands: CommandMap = {

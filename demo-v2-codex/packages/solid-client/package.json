@@ -16,10 +16,21 @@
     "test": "vitest run tests"
   },
   "dependencies": {
+    "@inrupt/solid-client-authn-browser": "catalog:",
+    "@devalbo/filesystem": "workspace:*",
     "@devalbo/shared": "workspace:*",
-    "@devalbo/state": "workspace:*"
+    "@devalbo/state": "workspace:*",
+    "tinybase": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:"
   },
   "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-test-renderer": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-test-renderer": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

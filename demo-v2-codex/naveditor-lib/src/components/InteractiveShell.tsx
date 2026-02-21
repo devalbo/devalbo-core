@@ -1,18 +1,37 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Box, Text } from 'ink';
 import { TextInput } from '@devalbo/ui';
 import { commands, type CommandName } from '@/commands';
 import { BrowserShellProvider } from './BrowserShellProvider';
 import { TerminalShellProvider } from './TerminalShellProvider';
-import { detectPlatform, RuntimePlatform } from '@devalbo/shared';
+import {
+  BrowserConnectivityService,
+  type AppConfig,
+  detectPlatform,
+  RuntimePlatform,
+  type IConnectivityService
+} from '@devalbo/shared';
 import { createDevalboStore, type DevalboStore } from '@devalbo/state';
+import { useSolidSession } from '@devalbo/solid-client';
+import { createFilesystemDriver, type IFilesystemDriver } from '@devalbo/filesystem';
 
 interface CommandOutput {
   command: string;
   component?: ReactNode;
 }
 
-function ShellContent({ runtime, store }: { runtime: 'browser' | 'terminal'; store: DevalboStore }) {
+function ShellContent({
+  runtime,
+  store,
+  config
+}: {
+  runtime: 'browser' | 'terminal';
+  store: DevalboStore;
+  config?: AppConfig;
+}) {
+  const session = useSolidSession();
+  const [driver, setDriver] = useState<IFilesystemDriver | undefined>(undefined);
+  const [connectivity] = useState<IConnectivityService>(() => new BrowserConnectivityService());
   const [input, setInput] = useState('');
   const [inputKey, setInputKey] = useState(0);
   const [cwd, setCwd] = useState(() => {
@@ -26,6 +45,16 @@ function ShellContent({ runtime, store }: { runtime: 'browser' | 'terminal'; sto
       component: <Text color="cyan">Try: pwd, ls, export ., import snapshot.bft restore, backend</Text>
     }
   ]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void createFilesystemDriver().then((nextDriver) => {
+      if (!cancelled) setDriver(nextDriver);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const executeCommand = async (raw: string) => {
     const parts = raw.trim().split(/\s+/);
@@ -61,7 +90,11 @@ function ShellContent({ runtime, store }: { runtime: 'browser' | 'terminal'; sto
 
     const result = await command(args, {
       ...commandOptions,
-      store
+      store,
+      session,
+      ...(config ? { config } : {}),
+      ...(driver ? { driver } : {}),
+      connectivity
     });
 
     if (commandName !== 'clear') {
@@ -94,23 +127,28 @@ function ShellContent({ runtime, store }: { runtime: 'browser' | 'terminal'; sto
   );
 }
 
-export const InteractiveShell: React.FC<{ runtime?: 'browser' | 'terminal'; store?: DevalboStore }> = ({
+export const InteractiveShell: React.FC<{
+  runtime?: 'browser' | 'terminal';
+  store?: DevalboStore;
+  config?: AppConfig;
+}> = ({
   runtime = 'browser',
-  store
+  store,
+  config
 }) => {
   const shellStore = useMemo(() => store ?? createDevalboStore(), [store]);
 
   if (runtime === 'terminal') {
     return (
       <TerminalShellProvider>
-        <ShellContent runtime="terminal" store={shellStore} />
+        <ShellContent runtime="terminal" store={shellStore} {...(config ? { config } : {})} />
       </TerminalShellProvider>
     );
   }
 
   return (
     <BrowserShellProvider>
-      <ShellContent runtime="browser" store={shellStore} />
+      <ShellContent runtime="browser" store={shellStore} {...(config ? { config } : {})} />
     </BrowserShellProvider>
   );
 };
