@@ -12,7 +12,10 @@ declare global {
   }
 }
 
-window.cli = cli;
+const env = (import.meta as ImportMeta & { env?: { DEV?: boolean; VITE_ENABLE_WINDOW_CLI?: string } }).env;
+if (env?.DEV || env?.VITE_ENABLE_WINDOW_CLI === 'true') {
+  window.cli = cli;
+}
 
 const root = document.getElementById('root');
 if (root) {

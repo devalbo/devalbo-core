@@ -1,9 +1,15 @@
 import { render } from 'ink';
+import { useState } from 'react';
 import { createProgram } from './program';
 import { commands, type CommandName } from './commands';
 import { TerminalShellProvider } from './components/TerminalShellProvider';
 import { InteractiveShell } from './components/InteractiveShell';
 import { createDevalboStore } from '@devalbo/state';
+
+const TerminalInteractiveShell = ({ store }: { store: ReturnType<typeof createDevalboStore> }) => {
+  const [cwd, setCwd] = useState(process.cwd());
+  return <InteractiveShell runtime="terminal" store={store} driver={null} cwd={cwd} setCwd={setCwd} />;
+};
 
 export async function setupCLI(argv?: string[]) {
   const program = createProgram();
@@ -14,7 +20,7 @@ export async function setupCLI(argv?: string[]) {
 
   program.commands.find((cmd) => cmd.name() === 'interactive')?.action(() => {
     interactiveMode = true;
-    render(<InteractiveShell runtime="terminal" store={store} />);
+    render(<TerminalInteractiveShell store={store} />);
   });
 
   for (const cmd of program.commands) {
@@ -41,7 +47,7 @@ export async function setupCLI(argv?: string[]) {
 
   await program.parseAsync(parsedArgv);
   if (!interactiveMode && parsedArgv.length <= 2) {
-    render(<InteractiveShell runtime="terminal" store={store} />);
+    render(<TerminalInteractiveShell store={store} />);
   }
   return program;
 }
