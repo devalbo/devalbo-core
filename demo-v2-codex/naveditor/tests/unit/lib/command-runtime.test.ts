@@ -3,9 +3,10 @@ import { createDevalboStore } from '@devalbo/state';
 import {
   executeCommand,
   executeCommandRaw,
+  filesystemCommands,
   parseCommandLine,
   type CommandRuntimeContext
-} from '@/lib/command-runtime';
+} from '@devalbo/cli-shell';
 
 const extractText = (node: unknown): string => {
   if (node == null) return '';
@@ -25,6 +26,7 @@ describe('command-runtime', () => {
 
   it('returns no-op result for blank raw command', async () => {
     const ctx: CommandRuntimeContext = {
+      commands: {},
       store: createDevalboStore(),
       cwd: '/',
       setCwd: vi.fn()
@@ -37,6 +39,7 @@ describe('command-runtime', () => {
 
   it('returns unknown command result without throwing', async () => {
     const ctx: CommandRuntimeContext = {
+      commands: {},
       store: createDevalboStore(),
       cwd: '/',
       setCwd: vi.fn()
@@ -49,6 +52,7 @@ describe('command-runtime', () => {
   it('forwards options built from context to commands', async () => {
     const setCwd = vi.fn();
     const ctx: CommandRuntimeContext = {
+      commands: { ...filesystemCommands },
       store: createDevalboStore(),
       cwd: '/tmp',
       setCwd

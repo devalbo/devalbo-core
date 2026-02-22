@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { unsafeAsFilePath } from '@devalbo/shared';
-import { getDriver } from '@/lib/file-operations';
+import { getDriver } from '@devalbo/cli-shell';
 
 const FIXTURES = path.join(fileURLToPath(new URL('.', import.meta.url)), '../../fixtures');
 

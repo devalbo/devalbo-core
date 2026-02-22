@@ -8,10 +8,14 @@ const mockReaddir = vi.fn();
 const mockWatch = vi.fn();
 const mockUnwatch = vi.fn();
 
-vi.mock('@/lib/file-operations', () => ({
+vi.mock('@devalbo/cli-shell', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@devalbo/cli-shell')>();
+  return {
+    ...actual,
   getDriver: vi.fn(async () => ({ readdir: mockReaddir })),
   getWatcher: vi.fn(async () => ({ watch: mockWatch }))
-}));
+  };
+});
 
 import { useFileTree } from '@/hooks/use-file-tree';
 

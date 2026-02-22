@@ -1,0 +1,29 @@
+{
+  "name": "@devalbo/cli-shell",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@devalbo/commands": "workspace:*",
+    "@devalbo/filesystem": "workspace:*",
+    "@devalbo/shared": "workspace:*",
+    "@devalbo/state": "workspace:*",
+    "@devalbo/ui": "workspace:*",
+    "@optique/core": "^0.10.3",
+    "commander": "catalog:",
+    "effect": "catalog:",
+    "ink": "catalog:",
+    "ink-web": "catalog:",
+    "react": "catalog:",
+    "tinybase": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "typescript": "catalog:"
+  }
+}

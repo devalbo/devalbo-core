@@ -3,15 +3,18 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["../naveditor-lib/src/*"],
+      "@/*": ["../editor-lib/src/*"],
+      "@devalbo/cli-shell": ["../packages/cli-shell/src/index.ts"],
+      "@devalbo/cli-shell/*": ["../packages/cli-shell/src/*"],
       "@devalbo/filesystem/node": ["../packages/filesystem/src/node.ts"],
       "@devalbo/filesystem": ["../packages/filesystem/src/index.ts"],
       "@devalbo/commands": ["../packages/commands/src/index.ts"],
       "@devalbo/shared": ["../packages/shared/src/index.ts"],
+      "@devalbo/solid-client": ["../packages/solid-client/src/index.ts"],
       "@devalbo/state": ["../packages/state/src/index.ts"],
       "@devalbo/ui": ["../packages/ui/src/index.ts"]
     },
     "types": ["node"]
   },
-  "include": ["../naveditor-lib/src/**/*"]
+  "include": ["../editor-lib/src/**/*"]
 }

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Effect } from 'effect';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateNavigateArgs, validateEditArgs } from '@/lib/validate-args.node';
+import { validateNavigateArgs, validateEditArgs } from '@/lib/validate-args';
 
 const FIXTURES = path.join(fileURLToPath(new URL('.', import.meta.url)), '../../fixtures');
 

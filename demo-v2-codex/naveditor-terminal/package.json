@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "build": "echo 'naveditor-terminal: no build step required'",
-    "terminal": "node --import tsx ../naveditor-lib/src/cli-node.tsx",
-    "interactive": "node --import tsx ../naveditor-lib/src/cli-node.tsx interactive",
-    "terminal:dev": "node --import tsx ../naveditor-lib/src/cli-node.tsx",
+    "terminal": "node --import tsx ../editor-lib/src/cli-node.tsx",
+    "interactive": "node --import tsx ../editor-lib/src/cli-node.tsx interactive",
+    "terminal:dev": "node --import tsx ../editor-lib/src/cli-node.tsx",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@devalbo/naveditor-lib": "workspace:*",
+    "@devalbo/cli-shell": "workspace:*",
+    "@devalbo/editor-lib": "workspace:*",
     "@devalbo/commands": "workspace:*",
     "@devalbo/filesystem": "workspace:*",
     "@devalbo/shared": "workspace:*",

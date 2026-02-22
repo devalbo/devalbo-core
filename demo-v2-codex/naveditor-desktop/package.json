@@ -11,10 +11,12 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@devalbo/cli-shell": "workspace:*",
     "@devalbo/commands": "workspace:*",
     "@devalbo/filesystem": "workspace:*",
-    "@devalbo/naveditor-lib": "workspace:*",
+    "@devalbo/editor-lib": "workspace:*",
     "@devalbo/shared": "workspace:*",
+    "@devalbo/solid-client": "workspace:*",
     "@devalbo/state": "workspace:*",
     "@devalbo/ui": "workspace:*",
     "@tauri-apps/api": "catalog:",

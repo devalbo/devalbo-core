@@ -34,13 +34,15 @@ export default defineConfig({
   plugins: [react(), nodePolyfills()],
   resolve: {
     alias: [
-      { find: '@/lib/validate-args', replacement: resolve(__dirname, '../naveditor-lib/src/lib/validate-args.ts') },
+      { find: '@/lib/validate-args', replacement: resolve(__dirname, '../packages/cli-shell/src/lib/validate-args.ts') },
+      { find: /^@devalbo\/cli-shell\/(.*)$/, replacement: resolve(__dirname, '../packages/cli-shell/src/$1') },
+      { find: '@devalbo/cli-shell', replacement: resolve(__dirname, '../packages/cli-shell/src/index.ts') },
       { find: '@devalbo/commands', replacement: resolve(__dirname, '../packages/commands/src/index.ts') },
       { find: '@devalbo/shared', replacement: resolve(__dirname, '../packages/shared/src/index.ts') },
       { find: '@devalbo/solid-client', replacement: resolve(__dirname, '../packages/solid-client/src/index.ts') },
       { find: '@devalbo/state', replacement: resolve(__dirname, '../packages/state/src/index.ts') },
       { find: '@devalbo/ui', replacement: resolve(__dirname, '../packages/ui/src/index.ts') },
-      { find: '@', replacement: resolve(__dirname, '../naveditor-lib/src') },
+      { find: '@', replacement: resolve(__dirname, '../editor-lib/src') },
       { find: 'ink', replacement: 'ink-web' }
     ]
   }

@@ -3,11 +3,14 @@ import { createDevalboStore } from '@devalbo/state';
 import {
   bindCliRuntimeSource,
   cli,
+  filesystemCommands,
+  systemCommands,
   unbindCliRuntimeSource
-} from '@/web/console-helpers';
-import type { CommandRuntimeContext } from '@/lib/command-runtime';
+} from '@devalbo/cli-shell';
+import type { CommandRuntimeContext } from '@devalbo/cli-shell';
 
 const makeContext = (cwd: string): CommandRuntimeContext => ({
+  commands: { ...filesystemCommands, ...systemCommands },
   store: createDevalboStore(),
   cwd,
   setCwd: () => undefined

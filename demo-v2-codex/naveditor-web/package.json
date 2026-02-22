@@ -10,10 +10,12 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@devalbo/naveditor-lib": "workspace:*",
+    "@devalbo/cli-shell": "workspace:*",
+    "@devalbo/editor-lib": "workspace:*",
     "@devalbo/commands": "workspace:*",
     "@devalbo/filesystem": "workspace:*",
     "@devalbo/shared": "workspace:*",
+    "@devalbo/solid-client": "workspace:*",
     "@devalbo/state": "workspace:*",
     "@devalbo/ui": "workspace:*",
     "@sqlite.org/sqlite-wasm": "catalog:",

@@ -11,7 +11,9 @@ export default defineConfig({
   resolve: {
     alias: [
       // More-specific aliases must come before the @/ catch-all
-      { find: '@/lib/validate-args', replacement: resolve(__dirname, 'naveditor-lib/src/lib/validate-args.node.ts') },
+      { find: '@/lib/validate-args', replacement: resolve(__dirname, 'packages/cli-shell/src/lib/validate-args.node.ts') },
+      { find: /^@devalbo\/cli-shell\/(.*)$/, replacement: resolve(__dirname, 'packages/cli-shell/src/$1') },
+      { find: '@devalbo/cli-shell', replacement: resolve(__dirname, 'packages/cli-shell/src/index.ts') },
       { find: '@devalbo/filesystem/node', replacement: resolve(__dirname, 'packages/filesystem/src/node.ts') },
       { find: '@devalbo/filesystem', replacement: resolve(__dirname, 'packages/filesystem/src/index.ts') },
       { find: '@devalbo/commands', replacement: resolve(__dirname, 'packages/commands/src/index.ts') },
@@ -19,7 +21,7 @@ export default defineConfig({
       { find: '@devalbo/solid-client', replacement: resolve(__dirname, 'packages/solid-client/src/index.ts') },
       { find: '@devalbo/state', replacement: resolve(__dirname, 'packages/state/src/index.ts') },
       { find: '@devalbo/ui', replacement: resolve(__dirname, 'packages/ui/src/index.ts') },
-      { find: /^@\/(.*)$/, replacement: resolve(__dirname, 'naveditor-lib/src/$1') },
+      { find: /^@\/(.*)$/, replacement: resolve(__dirname, 'editor-lib/src/$1') },
     ],
   },
 });

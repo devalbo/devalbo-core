@@ -3,7 +3,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["../naveditor-lib/src/*"],
+      "@/*": ["../editor-lib/src/*"],
+      "@devalbo/cli-shell": ["../packages/cli-shell/src/index.ts"],
+      "@devalbo/cli-shell/*": ["../packages/cli-shell/src/*"],
       "@devalbo/filesystem/node": ["../packages/filesystem/src/node.ts"]
     },
     "types": ["node"]

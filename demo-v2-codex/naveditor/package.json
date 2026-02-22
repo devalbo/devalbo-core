@@ -23,7 +23,8 @@
     "test:all": "pnpm test:unit && pnpm test:bdd"
   },
   "dependencies": {
-    "@devalbo/naveditor-lib": "workspace:*",
+    "@devalbo/cli-shell": "workspace:*",
+    "@devalbo/editor-lib": "workspace:*",
     "@devalbo/commands": "workspace:*",
     "@devalbo/filesystem": "workspace:*",
     "@devalbo/shared": "workspace:*",

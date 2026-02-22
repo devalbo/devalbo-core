@@ -6,9 +6,13 @@ import type { UseFileEditorReturn } from '@/hooks/use-file-editor';
 const mockReadFile = vi.fn();
 const mockWriteFile = vi.fn();
 
-vi.mock('@/lib/file-operations', () => ({
+vi.mock('@devalbo/cli-shell', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@devalbo/cli-shell')>();
+  return {
+    ...actual,
   getDriver: vi.fn(async () => ({ readFile: mockReadFile, writeFile: mockWriteFile }))
-}));
+  };
+});
 
 import { useFileEditor } from '@/hooks/use-file-editor';
 

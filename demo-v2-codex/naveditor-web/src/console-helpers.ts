@@ -1,1 +1,1 @@
-export { cli } from '@/web/console-helpers';
+export { cli } from '@devalbo/cli-shell';

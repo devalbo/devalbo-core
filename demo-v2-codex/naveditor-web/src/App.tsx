@@ -24,7 +24,8 @@ import {
   type SyncRoot
 } from '@devalbo/shared';
 import { createLocalPersister } from 'tinybase/persisters/persister-browser';
-import { InteractiveShell } from '@/components/InteractiveShell';
+import { InteractiveShell, bindCliRuntimeSource, unbindCliRuntimeSource } from '@devalbo/cli-shell';
+import { commands } from '@/commands';
 import { ActivePersonaProvider } from '@/components/social/ActivePersonaContext';
 import { FileSyncContext, type FileSyncMap } from '@/components/social/FileSyncContext';
 import { CardExchangeTab } from '@/components/social/d1/CardExchangeTab';
@@ -33,7 +34,7 @@ import { RelationshipDashboardTab } from '@/components/social/d3/RelationshipDas
 import { SolidSyncBar } from '@/components/social/SolidSyncBar';
 import { useSolidProfileSync } from '@/hooks/useSolidProfileSync';
 import { FileExplorer } from '@/web/FileExplorer';
-import { bindCliRuntimeSource, unbindCliRuntimeSource } from '@/web/console-helpers';
+import { createProgram } from '@/program';
 import { defaultAppConfig } from './config';
 
 const getDefaultCwd = (): string => {
@@ -41,6 +42,8 @@ const getDefaultCwd = (): string => {
   const nodeProcess = (globalThis as { process?: { cwd?: () => string } }).process;
   return nodeProcess?.cwd?.() ?? '/';
 };
+
+const WELCOME_MESSAGE = 'Try: pwd, ls, export ., import snapshot.bft restore, backend';
 
 const AppContent: React.FC<{ store: DevalboStore }> = ({ store }) => {
   const [tab, setTab] = useState<'terminal' | 'explorer' | 'people'>('terminal');
@@ -137,6 +140,8 @@ const AppContent: React.FC<{ store: DevalboStore }> = ({ store }) => {
       getContext: () => {
         if (!store || !driverRef.current) return null;
         return {
+          commands,
+          createProgram,
           store,
           session: sessionRef.current,
           config: configRef.current,
@@ -203,7 +208,17 @@ const AppContent: React.FC<{ store: DevalboStore }> = ({ store }) => {
           {tab === 'terminal' && (
             <div style={{ border: '1px solid #334155', borderRadius: '8px', overflow: 'hidden', background: '#020617' }}>
               <InkTerminalBox rows={28} focus>
-                <InteractiveShell store={store} config={config} driver={driver} cwd={cwd} setCwd={setCwd} />
+                <InteractiveShell
+                  commands={commands}
+                  createProgram={createProgram}
+                  session={session}
+                  store={store}
+                  config={config}
+                  driver={driver}
+                  cwd={cwd}
+                  setCwd={setCwd}
+                  welcomeMessage={WELCOME_MESSAGE}
+                />
               </InkTerminalBox>
             </div>
           )}

@@ -8,7 +8,7 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: resolve(__dirname, '../naveditor-lib/src/cli-node.tsx'),
+      entry: resolve(__dirname, '../editor-lib/src/cli-node.tsx'),
       name: 'naveditor',
       fileName: () => 'cli.js',
       formats: ['es']
@@ -22,6 +22,7 @@ export default defineConfig({
         'react',
         'react/jsx-runtime',
         '@devalbo/commands',
+        '@devalbo/cli-shell',
         '@devalbo/filesystem',
         '@devalbo/filesystem/node',
         '@devalbo/shared',
@@ -33,8 +34,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, '../naveditor-lib/src'),
-      '@/lib/validate-args': resolve(__dirname, '../naveditor-lib/src/lib/validate-args.node.ts')
+      '@': resolve(__dirname, '../editor-lib/src'),
+      '@/lib/validate-args': resolve(__dirname, '../packages/cli-shell/src/lib/validate-args.node.ts')
     }
   }
 });

@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@devalbo/commands": ["../commands/src/index.ts"],
+      "@devalbo/filesystem": ["../filesystem/src/index.ts"],
+      "@devalbo/filesystem/node": ["../filesystem/src/node.ts"],
+      "@devalbo/shared": ["../shared/src/index.ts"],
+      "@devalbo/state": ["../state/src/index.ts"],
+      "@devalbo/ui": ["../ui/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

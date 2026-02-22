@@ -23,7 +23,8 @@ import {
   useSolidSession
 } from '@devalbo/solid-client';
 import { createLocalPersister } from 'tinybase/persisters/persister-browser';
-import { InteractiveShell } from '@/components/InteractiveShell';
+import { InteractiveShell, bindCliRuntimeSource, unbindCliRuntimeSource } from '@devalbo/cli-shell';
+import { commands } from '@/commands';
 import { ActivePersonaProvider } from '@/components/social/ActivePersonaContext';
 import { FileSyncContext, type FileSyncMap } from '@/components/social/FileSyncContext';
 import { CardExchangeTab } from '@/components/social/d1/CardExchangeTab';
@@ -31,7 +32,7 @@ import { ActivityConsoleTab } from '@/components/social/d2/ActivityConsoleTab';
 import { RelationshipDashboardTab } from '@/components/social/d3/RelationshipDashboardTab';
 import { SolidSyncBar } from '@/components/social/SolidSyncBar';
 import { useSolidProfileSync } from '@/hooks/useSolidProfileSync';
-import { bindCliRuntimeSource, unbindCliRuntimeSource } from '@/web/console-helpers';
+import { createProgram } from '@/program';
 import { FileExplorer } from '@/web/FileExplorer';
 import { registerDesktopMimeTypeHandlers } from './handlers/register-desktop-handlers';
 import { defaultAppConfig } from './config';
@@ -41,6 +42,8 @@ const getDefaultCwd = (): string => {
   const nodeProcess = (globalThis as { process?: { cwd?: () => string } }).process;
   return nodeProcess?.cwd?.() ?? '/';
 };
+
+const WELCOME_MESSAGE = 'Try: pwd, ls, export ., import snapshot.bft restore, backend';
 
 const AppContent: React.FC<{ store: DevalboStore }> = ({ store }) => {
   const [tab, setTab] = useState<'terminal' | 'explorer' | 'people'>('terminal');
@@ -85,7 +88,9 @@ const AppContent: React.FC<{ store: DevalboStore }> = ({ store }) => {
     const listenerId = store.addTableListener(SYNC_ROOTS_TABLE, () => {
       setSyncRoots(listSyncRoots(store));
     });
-    return () => store.delListener(listenerId);
+    return () => {
+      store.delListener(listenerId);
+    };
   }, [store]);
 
   useEffect(() => {
@@ -134,6 +139,8 @@ const AppContent: React.FC<{ store: DevalboStore }> = ({ store }) => {
       getContext: () => {
         if (!store || !driverRef.current) return null;
         return {
+          commands,
+          createProgram,
           store,
           session: sessionRef.current,
           config: configRef.current,
@@ -200,7 +207,17 @@ const AppContent: React.FC<{ store: DevalboStore }> = ({ store }) => {
           {tab === 'terminal' && (
             <div style={{ border: '1px solid #334155', borderRadius: '8px', overflow: 'hidden', background: '#020617' }}>
               <InkTerminalBox rows={28} focus>
-                <InteractiveShell store={store} config={config} driver={driver} cwd={cwd} setCwd={setCwd} />
+                <InteractiveShell
+                  commands={commands}
+                  createProgram={createProgram}
+                  session={session}
+                  store={store}
+                  config={config}
+                  driver={driver}
+                  cwd={cwd}
+                  setCwd={setCwd}
+                  welcomeMessage={WELCOME_MESSAGE}
+                />
               </InkTerminalBox>
             </div>
           )}

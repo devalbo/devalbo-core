@@ -3,8 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Text } from 'ink';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { createDevalboStore } from '@devalbo/state';
-import { InteractiveShell } from '@/components/InteractiveShell';
-import * as commandRuntime from '@/lib/command-runtime';
+import { InteractiveShell } from '@devalbo/cli-shell';
+import * as commandRuntime from '@devalbo/cli-shell/lib/command-runtime';
 
 const findSubmit = (renderer: ReactTestRenderer): ((raw: string) => Promise<void>) => {
   const input = renderer.root.find((node) => typeof node.props?.onSubmit === 'function');
@@ -27,6 +27,7 @@ describe('InteractiveShell', () => {
       renderer = create(
         <InteractiveShell
           runtime="browser"
+          commands={{}}
           store={createDevalboStore()}
           driver={null}
           cwd="/"
@@ -43,6 +44,7 @@ describe('InteractiveShell', () => {
     expect(executeSpy).toHaveBeenCalledWith(
       'pwd',
       expect.objectContaining({
+        commands: {},
         cwd: '/',
         setCwd,
         store: expect.any(Object)
@@ -60,6 +62,7 @@ describe('InteractiveShell', () => {
       renderer = create(
         <InteractiveShell
           runtime="browser"
+          commands={{}}
           store={createDevalboStore()}
           driver={null}
           cwd="/"
