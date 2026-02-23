@@ -1,0 +1,39 @@
+name: Package Smoke
+
+on:
+  push:
+    branches:
+      - main
+      - v2-go-with-codex
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  package-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.3
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package dist
+        run: npm run build:dist
+
+      - name: Pack npm artifact
+        run: npm pack --ignore-scripts
+
+      - name: Smoke test fresh app from packed artifact
+        run: bash scripts/smoke-create-app.sh --mode local-pack --force --app-dir /tmp/devalbo-create-app-smoke
