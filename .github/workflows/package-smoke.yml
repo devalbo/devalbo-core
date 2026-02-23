@@ -25,15 +25,16 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
+          cache-dependency-path: demo-v2-codex/pnpm-lock.yaml
 
       - name: Install workspace dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm -C demo-v2-codex install --frozen-lockfile
 
       - name: Build package dist
-        run: npm run build:dist
+        run: npm --prefix demo-v2-codex run build:dist
 
       - name: Pack npm artifact
-        run: npm pack --ignore-scripts
+        run: npm --prefix demo-v2-codex pack --ignore-scripts
 
       - name: Smoke test fresh app from packed artifact
         run: bash demo-v2-codex/scripts/smoke-create-app.sh --mode local-pack --force --app-dir /tmp/devalbo-create-app-smoke
