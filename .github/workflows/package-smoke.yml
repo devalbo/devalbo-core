@@ -36,4 +36,4 @@ jobs:
         run: npm pack --ignore-scripts
 
       - name: Smoke test fresh app from packed artifact
-        run: bash scripts/smoke-create-app.sh --mode local-pack --force --app-dir /tmp/devalbo-create-app-smoke
+        run: bash demo-v2-codex/scripts/smoke-create-app.sh --mode local-pack --force --app-dir /tmp/devalbo-create-app-smoke
