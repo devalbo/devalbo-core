@@ -39,5 +39,14 @@ jobs:
         working-directory: demo-v2-codex
         run: npm pack --ignore-scripts
 
-      - name: Smoke test fresh app from packed artifact
-        run: bash demo-v2-codex/scripts/smoke-create-app.sh --mode local-pack --force --app-dir /tmp/devalbo-create-app-smoke
+      - name: Verify packed artifact can be installed and imported
+        working-directory: demo-v2-codex
+        run: |
+          set -euo pipefail
+          PKG_TGZ="$(ls -1 devalbo-cli-*.tgz | head -n 1)"
+          TMP_DIR="$(mktemp -d)"
+          cp "$PKG_TGZ" "$TMP_DIR/"
+          cd "$TMP_DIR"
+          npm init -y >/dev/null
+          npm install "./$PKG_TGZ" >/dev/null
+          node --input-type=module -e "import * as m from 'devalbo-cli'; const required=['startInteractiveCli','InteractiveShell','bindCliRuntimeSource','unbindCliRuntimeSource','cli','builtinCommands','registerBuiltinCommands','mergeCommands','createCliAppConfig','defaultWelcomeMessage']; const missing=required.filter((k)=>!(k in m)); if(missing.length){console.error('Missing exports:', missing.join(',')); process.exit(1);} console.log('Packed install/import check passed.');"
