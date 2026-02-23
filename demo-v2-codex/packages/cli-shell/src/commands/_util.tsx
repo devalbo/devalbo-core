@@ -1,4 +1,5 @@
 import { Box, Text } from 'ink';
+import React from 'react';
 import type { AppConfig, CommandOptions, CommandResult, IConnectivityService } from '@devalbo/shared';
 import type { Store } from 'tinybase';
 import type { IFilesystemDriver } from '@devalbo/filesystem';

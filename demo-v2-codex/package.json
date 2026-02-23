@@ -1,10 +1,21 @@
 {
-  "name": "devalbo-core-v2",
-  "private": true,
+  "name": "devalbo-cli",
+  "private": false,
   "version": "0.1.0",
   "packageManager": "pnpm@10.29.3",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "pnpm -r build",
+    "build:dist": "tsup --config tsup.config.ts",
+    "prepare": "npm run build:dist",
     "type-check": "pnpm -r type-check",
     "test": "pnpm -r test",
     "test:workspace": "vitest run",
@@ -16,11 +27,15 @@
     "desktop:dev": "pnpm -C naveditor-desktop dev",
     "desktop:build": "pnpm -C naveditor-desktop build"
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "devDependencies": {
-    "@types/node": "catalog:",
-    "@types/react": "catalog:",
-    "ink": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "@types/node": "^25.2.3",
+    "@types/react": "^19.2.14",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }

@@ -608,3 +608,44 @@ Decision: adopt Claude’s recommendation.
 - Phase 0 contract
 - Phase 1 git-install spike (high-risk de-risking)
 - Remaining implementation only after spike passes
+
+---
+
+## Execution Notes (Current Progress)
+
+Status snapshot while executing this plan:
+
+- Completed:
+  - Added new wrapper workspace package: `packages/devalbo-cli/`
+  - Added app-facing re-export surface in `packages/devalbo-cli/src/index.ts`
+  - Added new example app scaffold: `examples/hello-universal/` (terminal + browser)
+  - Added root installable façade build path:
+    - `src/devalbo-cli.ts`
+    - `tsconfig.npm.json`
+    - `tsup.config.ts`
+    - root `package.json` export/build/prepare wiring
+  - `hello-universal` verification passes:
+    - `pnpm --filter hello-universal run type-check`
+    - `pnpm --filter hello-universal run build`
+    - `pnpm --filter hello-universal run test` (3 parity tests)
+  - Internal package verification passes:
+    - `pnpm --filter @devalbo/devalbo-cli-dev run type-check`
+    - `pnpm --filter @devalbo/cli-shell run type-check`
+  - Packaging/import smoke test passes from a fresh temp directory:
+    - `npm pack --ignore-scripts`
+    - `npm install ./devalbo-cli-0.1.0.tgz`
+    - Node ESM import check confirms required onboarding exports are present
+  - Terminal startup path launches and displays welcome prompt
+
+- In progress:
+  - End-to-end `npm install git+https://github.com/devalbo/devalbo-core.git` verification (not runnable in this restricted environment)
+
+- Known blockers discovered by spike:
+  - No functional blocker in local pack/install flow after build config update.
+  - Remaining validation item is networked git install execution in a truly fresh external directory.
+
+Immediate next actions:
+
+1. Run the networked git-install smoke test from a non-workspace temp directory on a machine with internet access.
+2. If successful, update `CREATE_AN_APP.md` to npm-only instructions using git install as the default path.
+3. Keep the verification section in this plan synchronized with those results.

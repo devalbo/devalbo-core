@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "devalbo-cli": ["../../packages/devalbo-cli/src/index.ts"],
+      "@devalbo/cli-shell": ["../../packages/cli-shell/src/index.ts"],
+      "@devalbo/cli-shell/*": ["../../packages/cli-shell/src/*"],
+      "@devalbo/commands": ["../../packages/commands/src/index.ts"],
+      "@devalbo/filesystem": ["../../packages/filesystem/src/index.ts"],
+      "@devalbo/shared": ["../../packages/shared/src/index.ts"],
+      "@devalbo/state": ["../../packages/state/src/index.ts"],
+      "@devalbo/ui": ["../../packages/ui/src/index.ts"],
+      "ink": ["../../node_modules/ink-web/dist/index.d.ts"]
+    },
+    "types": ["node"]
+  },
+  "include": ["src/**/*", "vite.config.ts"]
+}

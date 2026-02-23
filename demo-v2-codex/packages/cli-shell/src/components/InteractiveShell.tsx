@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import React, { useMemo, useState, type ReactNode } from 'react';
 import { Box, Text } from 'ink';
 import { TextInput } from '@devalbo/ui';
 import { BrowserShellProvider } from './BrowserShellProvider';

@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@devalbo/cli-shell": ["../cli-shell/src/index.ts"],
+      "@devalbo/cli-shell/*": ["../cli-shell/src/*"],
+      "@devalbo/filesystem": ["../filesystem/src/index.ts"],
+      "@devalbo/shared": ["../shared/src/index.ts"],
+      "@devalbo/state": ["../state/src/index.ts"]
+    },
+    "types": ["node"]
+  },
+  "include": ["src/**/*"]
+}

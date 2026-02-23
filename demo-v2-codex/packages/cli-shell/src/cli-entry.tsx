@@ -1,5 +1,6 @@
 import { render } from 'ink';
 import { useState } from 'react';
+import React from 'react';
 import type { Command } from 'commander';
 import type { CommandHandler } from './commands/_util';
 import type { AppConfig } from '@devalbo/shared';
